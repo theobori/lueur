@@ -29,4 +29,9 @@ go.work.sum
 
 # Editor/IDE
 # .idea/
-# .vscode/
+.vscode/
+.direnv
+result
+lueur
+examples
+*.log
