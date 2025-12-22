@@ -4,7 +4,10 @@ go 1.25.4
 
 require github.com/yuin/goldmark v1.7.13
 
-require github.com/muesli/reflow v0.3.0
+require (
+	github.com/muesli/reflow v0.3.0
+	github.com/sergi/go-diff v1.4.0
+)
 
 require (
 	github.com/mattn/go-runewidth v0.0.12 // indirect
