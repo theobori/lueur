@@ -6,7 +6,7 @@ import (
 
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/theobori/lueur/gophermap"
-	"github.com/theobori/lueur/renderer"
+	"github.com/theobori/lueur/walker"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
@@ -14,17 +14,17 @@ import (
 	"github.com/yuin/goldmark/text"
 )
 
-type Renderer struct {
+type Walker struct {
 	node    ast.Node
 	source  []byte
 	depth   int
-	options *renderer.Options
+	options *walker.Options
 
 	// Queue that manage the references output
 	referencesQueue []string
 }
 
-func NewRendererWithOptions(source []byte, options *renderer.Options) *Renderer {
+func NewWalkerWithOptions(source []byte, options *walker.Options) *Walker {
 	markdown := goldmark.New(
 		goldmark.WithExtensions(extension.GFM),
 	)
@@ -32,7 +32,7 @@ func NewRendererWithOptions(source []byte, options *renderer.Options) *Renderer 
 	p := markdown.Parser()
 	node := p.Parse(text.NewReader(source))
 
-	return &Renderer{
+	return &Walker{
 		node:            node,
 		source:          source,
 		depth:           0,
@@ -41,11 +41,11 @@ func NewRendererWithOptions(source []byte, options *renderer.Options) *Renderer 
 	}
 }
 
-func NewRenderer(source []byte, domain string) *Renderer {
-	return NewRendererWithOptions(source, renderer.NewDefaultOptions(domain))
+func NewWalker(source []byte, domain string) *Walker {
+	return NewWalkerWithOptions(source, walker.NewDefaultOptions(domain))
 }
 
-func (r *Renderer) createLineString(
+func (w *Walker) createLineString(
 	itemType gophermap.ItemType, description string,
 	destination string, domain string, port int,
 ) (string, error) {
@@ -62,7 +62,7 @@ func (r *Renderer) createLineString(
 	}
 
 	var s string
-	if r.options.WriteGPHFormat {
+	if w.options.WriteGPHFormat {
 		s = line.StringGPHFormat()
 	} else {
 		s = line.String()
@@ -71,14 +71,14 @@ func (r *Renderer) createLineString(
 	return s, nil
 }
 
-func (r *Renderer) visitEmphasis(node ast.Node) (string, error) {
-	return r.visitIteratorHelper(node)
+func (w *Walker) walkEmphasis(node ast.Node) (string, error) {
+	return w.walkIteratorHelper(node)
 }
 
-func (r *Renderer) visitText(node ast.Node) (string, error) {
+func (w *Walker) walkText(node ast.Node) (string, error) {
 	text := node.(*ast.Text)
 
-	s := string(text.Value(r.source))
+	s := string(text.Value(w.source))
 
 	if text.SoftLineBreak() || text.HardLineBreak() {
 		s += "\n"
@@ -87,8 +87,8 @@ func (r *Renderer) visitText(node ast.Node) (string, error) {
 	return s, nil
 }
 
-func (r *Renderer) visitParagraph(node ast.Node) (string, error) {
-	s, err := r.visitIteratorHelper(node)
+func (w *Walker) walkParagraph(node ast.Node) (string, error) {
+	s, err := w.walkIteratorHelper(node)
 	if err != nil {
 		return "", err
 	}
@@ -102,17 +102,17 @@ func (r *Renderer) visitParagraph(node ast.Node) (string, error) {
 	return s, nil
 }
 
-func (r *Renderer) visitThematicBreak(_ ast.Node) (string, error) {
+func (w *Walker) walkThematicBreak(_ ast.Node) (string, error) {
 	return "", nil
 }
 
-func (r *Renderer) visitHeading(node ast.Node) (string, error) {
-	s, err := r.visitIteratorHelper(node)
+func (w *Walker) walkHeading(node ast.Node) (string, error) {
+	s, err := w.walkIteratorHelper(node)
 	if err != nil {
 		return "", err
 	}
 
-	if r.options.WriteFancyHeader {
+	if w.options.WriteFancyHeader {
 		heading := node.(*ast.Heading)
 		fancyPrefix := strings.Repeat("#", heading.Level)
 
@@ -133,17 +133,17 @@ func (r *Renderer) visitHeading(node ast.Node) (string, error) {
 	return s, nil
 }
 
-func (r *Renderer) visitAutoLink(node ast.Node) (string, error) {
+func (w *Walker) walkAutoLink(node ast.Node) (string, error) {
 	autoLink := node.(*ast.AutoLink)
 
-	destination := string(autoLink.URL(r.source))
+	destination := string(autoLink.URL(w.source))
 	title := destination
 
-	return r.visitReferenceHelper(node, title, destination)
+	return w.walkReferenceHelper(node, title, destination)
 }
 
-func (r *Renderer) visitBlockQuote(node ast.Node) (string, error) {
-	s, err := r.visitIteratorHelper(node)
+func (w *Walker) walkBlockQuote(node ast.Node) (string, error) {
+	s, err := w.walkIteratorHelper(node)
 	if err != nil {
 		return "", err
 	}
@@ -159,29 +159,29 @@ func (r *Renderer) visitBlockQuote(node ast.Node) (string, error) {
 	return s, nil
 }
 
-func (r *Renderer) visitList(_ ast.Node) (string, error) {
+func (w *Walker) walkList(_ ast.Node) (string, error) {
 	// TODO: implement lists
 	return "", nil
 }
 
-func (r *Renderer) visitLink(node ast.Node) (string, error) {
+func (w *Walker) walkLink(node ast.Node) (string, error) {
 	link := node.(*ast.Link)
 	destination := string(link.Destination)
 	title := string(link.Title)
 
-	return r.visitReferenceHelper(node, title, destination)
+	return w.walkReferenceHelper(node, title, destination)
 }
 
-func (r *Renderer) visitImage(node ast.Node) (string, error) {
+func (w *Walker) walkImage(node ast.Node) (string, error) {
 	image := node.(*ast.Image)
 	destination := string(image.Destination)
 	title := string(image.Title)
 
-	return r.visitReferenceHelper(node, title, destination)
+	return w.walkReferenceHelper(node, title, destination)
 }
 
-func (r *Renderer) visitCodeBlock(node ast.Node) (string, error) {
-	s := string(node.Lines().Value(r.source))
+func (w *Walker) walkCodeBlock(node ast.Node) (string, error) {
+	s := string(node.Lines().Value(w.source))
 	s = strings.Trim(s, "\n")
 
 	if node.HasBlankPreviousLines() {
@@ -193,69 +193,73 @@ func (r *Renderer) visitCodeBlock(node ast.Node) (string, error) {
 	return s, nil
 }
 
-func (r *Renderer) visitDocument(node ast.Node) (string, error) {
-	return r.visitIteratorHelper(node)
+func (w *Walker) walkDocument(node ast.Node) (string, error) {
+	return w.walkIteratorHelper(node)
 }
 
-func (r *Renderer) visitTextBlock(node ast.Node) (string, error) {
-	return r.visitIteratorHelper(node)
+func (w *Walker) walkTextBlock(node ast.Node) (string, error) {
+	return w.walkIteratorHelper(node)
 }
 
-func (r *Renderer) visitHTMLBlock(_ ast.Node) (string, error) {
+func (w *Walker) walkHTMLBlock(_ ast.Node) (string, error) {
 	return "", nil
 }
 
-func (r *Renderer) visitTable(_ ast.Node) (string, error) {
+func (w *Walker) walkTable(_ ast.Node) (string, error) {
 	return "", nil
 }
 
-func (r *Renderer) visitCodeSpan(node ast.Node) (string, error) {
-	return r.visitIteratorHelper(node)
+func (w *Walker) walkCodeSpan(node ast.Node) (string, error) {
+	return w.walkIteratorHelper(node)
 }
 
-func (r *Renderer) visit(node ast.Node) (string, error) {
+func (w *Walker) walk(node ast.Node) (string, error) {
 	switch node.(type) {
 	case *ast.Emphasis:
-		return r.visitEmphasis(node)
+		return w.walkEmphasis(node)
 	case *ast.Text:
-		return r.visitText(node)
+		return w.walkText(node)
 	case *ast.Paragraph:
-		return r.visitParagraph(node)
+		return w.walkParagraph(node)
 	case *ast.Heading:
-		return r.visitHeading(node)
+		return w.walkHeading(node)
 	case *ast.ThematicBreak:
-		return r.visitThematicBreak(node)
+		return w.walkThematicBreak(node)
 	case *ast.AutoLink:
-		return r.visitAutoLink(node)
+		return w.walkAutoLink(node)
 	case *ast.Blockquote:
-		return r.visitBlockQuote(node)
+		return w.walkBlockQuote(node)
 	case *ast.List:
-		return r.visitList(node)
+		return w.walkList(node)
 	case *ast.Link:
-		return r.visitLink(node)
+		return w.walkLink(node)
 	case *ast.Image:
-		return r.visitImage(node)
+		return w.walkImage(node)
 	case *ast.CodeBlock, *ast.FencedCodeBlock:
-		return r.visitCodeBlock(node)
+		return w.walkCodeBlock(node)
 	case *ast.Document:
-		return r.visitDocument(node)
+		return w.walkDocument(node)
 	case *ast.TextBlock:
-		return r.visitTextBlock(node)
+		return w.walkTextBlock(node)
 	case *ast.HTMLBlock:
-		return r.visitHTMLBlock(node)
+		return w.walkHTMLBlock(node)
 	case *ast.CodeSpan:
-		return r.visitCodeSpan(node)
+		return w.walkCodeSpan(node)
 	case *east.Table:
-		return r.visitTable(node)
+		return w.walkTable(node)
 	default:
 		return "", fmt.Errorf("unsupported node type: %s", node.Kind().String())
 	}
 }
 
-func (r *Renderer) formatDepthOneText(s string) (string, error) {
+func (w *Walker) formatDepthOneText(s string) (string, error) {
 	s = strings.TrimRight(s, "\n")
 
-	s = wordwrap.String(s, r.options.WordWrapLimit)
+	if w.options.ReferencePosition == walker.AfterTraverse && s == "" {
+		return "", nil
+	}
+
+	s = wordwrap.String(s, w.options.WordWrapLimit)
 
 	sDest := ""
 	linesRaw := strings.SplitSeq(s, "\n")
@@ -267,12 +271,12 @@ func (r *Renderer) formatDepthOneText(s string) (string, error) {
 		// remove antislash at the end
 		lineRaw = strings.TrimRight(lineRaw, "\\")
 
-		lineString, err := r.createLineString(
+		lineString, err := w.createLineString(
 			gophermap.ItemTypeInlineText,
 			lineRaw,
 			"/",
-			r.options.Domain,
-			r.options.Port,
+			w.options.Domain,
+			w.options.Port,
 		)
 		if err != nil {
 			return "", err
@@ -284,20 +288,20 @@ func (r *Renderer) formatDepthOneText(s string) (string, error) {
 	return sDest, nil
 }
 
-func (r *Renderer) Visit(node ast.Node) (string, error) {
-	r.depth += 1
+func (w *Walker) Walk(node ast.Node) (string, error) {
+	w.depth += 1
 
-	s, err := r.visit(node)
+	s, err := w.walk(node)
 	if err != nil {
 		return "", err
 	}
 
-	r.depth -= 1
+	w.depth -= 1
 
 	// the string result at depth 1 should always be gophermap inline text
 	// since refs are processed after
-	if r.depth == 1 {
-		s, err = r.formatDepthOneText(s)
+	if w.depth == 1 {
+		s, err = w.formatDepthOneText(s)
 		if err != nil {
 			return "", err
 		}
@@ -306,23 +310,19 @@ func (r *Renderer) Visit(node ast.Node) (string, error) {
 	// output the references by using the dedicated Lines
 	//
 	// depth 0 -> document/root node
-	if len(r.referencesQueue) > 0 &&
-		(r.options.ReferencePosition == renderer.AfterBlocks && r.depth == 1) ||
-		(r.options.ReferencePosition == renderer.AfterTraverse && r.depth == 0) {
-		for _, line := range r.referencesQueue {
+	if len(w.referencesQueue) > 0 &&
+		(w.options.ReferencePosition == walker.AfterBlocks && w.depth == 1) ||
+		(w.options.ReferencePosition == walker.AfterTraverse && w.depth == 0) {
+		for _, line := range w.referencesQueue {
 			s += line + "\n"
 		}
 
-		r.referencesQueue = nil
+		w.referencesQueue = nil
 	}
 
 	return s, nil
 }
 
-func (r *Renderer) VisitFromRoot() (string, error) {
-	return r.Visit(r.node)
-}
-
-func (r *Renderer) Render() (string, error) {
-	return r.VisitFromRoot()
+func (w *Walker) WalkFromRoot() (string, error) {
+	return w.Walk(w.node)
 }

@@ -1,4 +1,4 @@
-package renderer
+package walker
 
 import (
 	"github.com/theobori/lueur/gophermap"

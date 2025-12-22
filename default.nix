@@ -5,7 +5,7 @@ buildGoModule {
 
   src = ./.;
 
-  vendorHash = null;
+  vendorHash = "sha256-/orMRiTvdIy0wvFfkNJzg6pzBk988Kyt6nfstJsmvVw=";
 
   ldflags = [
     "-s"
@@ -13,8 +13,8 @@ buildGoModule {
   ];
 
   meta = {
-    description = "My project description";
-    homepage = "My project homepage";
+    description = "A gophermap walker for Markdown and HTML";
+    homepage = "https://github.com/theobori/lueur";
     license = lib.licenses.mit;
     mainProgram = "lueur";
   };

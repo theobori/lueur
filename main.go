@@ -8,15 +8,15 @@ import (
 	"os"
 
 	"github.com/theobori/lueur/gophermap"
-	"github.com/theobori/lueur/renderer"
-	"github.com/theobori/lueur/renderer/markdown"
+	"github.com/theobori/lueur/walker"
+	"github.com/theobori/lueur/walker/markdown"
 )
 
 func main() {
 	var (
 		err                     error
 		filename                string
-		options                 renderer.Options
+		options                 walker.Options
 		referencePositionString string
 	)
 
@@ -26,7 +26,7 @@ func main() {
 		"",
 		"Read input from a file",
 	)
-	// Renderer options as CLI flags
+	// walker options as CLI flags
 	flag.StringVar(
 		&options.Domain,
 		"domain",
@@ -76,7 +76,7 @@ func main() {
 		log.Fatalln("you must set the domain flag")
 	}
 
-	referencePosition, err := renderer.NewOutputPositionFromString(referencePositionString)
+	referencePosition, err := walker.NewOutputPositionFromString(referencePositionString)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -94,9 +94,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	r := markdown.NewRendererWithOptions(source, &options)
+	w := markdown.NewWalkerWithOptions(source, &options)
 
-	destination, err := r.Render()
+	destination, err := w.WalkFromRoot()
 	if err != nil {
 		log.Fatalln(err)
 	}
