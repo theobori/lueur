@@ -14,19 +14,55 @@ import (
 
 func main() {
 	var (
-		err      error
-		filename string
-		options  renderer.Options
+		err                     error
+		filename                string
+		options                 renderer.Options
+		referencePositionString string
 	)
 
-	flag.StringVar(&filename, "filename", "", "Read input from a file")
-
+	flag.StringVar(
+		&filename,
+		"filename",
+		"",
+		"Read input from a file",
+	)
 	// Renderer options as CLI flags
-	flag.StringVar(&options.Domain, "domain", "", "Gopher domain")
-	flag.IntVar(&options.Port, "port", gophermap.DefaultGopherPort, "Gopher port")
-	flag.IntVar(&options.WordWrapLimit, "word-wrap-limit", 80, "Word wrap limit")
-	flag.BoolVar(&options.WriteFancyHeaders, "fancy-header", false, "Write fancy headers (with hashtags as prefix)")
-	flag.BoolVar(&options.WriteGPHStyle, "gph-style", false, "Use gph style instead of gophermap")
+	flag.StringVar(
+		&options.Domain,
+		"domain",
+		"",
+		"Gopher domain",
+	)
+	flag.IntVar(
+		&options.Port,
+		"port",
+		gophermap.DefaultGopherPort,
+		"Gopher port",
+	)
+	flag.IntVar(
+		&options.WordWrapLimit,
+		"word-wrap-limit",
+		80,
+		"Word wrap limit",
+	)
+	flag.BoolVar(
+		&options.WriteFancyHeader,
+		"fancy-header",
+		false,
+		"Write fancy headers (with hashtags as prefix)",
+	)
+	flag.BoolVar(
+		&options.WriteGPHFormat,
+		"gph-format",
+		false,
+		"Use gph format instead of gophermap",
+	)
+	flag.StringVar(
+		&referencePositionString,
+		"reference-position",
+		"after-block",
+		"Used to control where the references are outputed ('after-block', 'after-all')",
+	)
 
 	flag.Parse()
 
@@ -39,6 +75,13 @@ func main() {
 	if options.Domain == "" {
 		log.Fatalln("you must set the domain flag")
 	}
+
+	referencePosition, err := renderer.NewOutputPositionFromString(referencePositionString)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	options.ReferencePosition = referencePosition
 
 	var source []byte
 	if filename == "" {

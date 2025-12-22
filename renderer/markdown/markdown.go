@@ -20,7 +20,7 @@ type Renderer struct {
 	depth   int
 	options *renderer.Options
 
-	// Hashmap that manage the references output
+	// Queue that manage the references output
 	referencesQueue []string
 }
 
@@ -62,7 +62,7 @@ func (r *Renderer) createLineString(
 	}
 
 	var s string
-	if r.options.WriteGPHStyle {
+	if r.options.WriteGPHFormat {
 		s = line.StringGPHFormat()
 	} else {
 		s = line.String()
@@ -112,7 +112,7 @@ func (r *Renderer) visitHeading(node ast.Node) (string, error) {
 		return "", err
 	}
 
-	if r.options.WriteFancyHeaders {
+	if r.options.WriteFancyHeader {
 		heading := node.(*ast.Heading)
 		fancyPrefix := strings.Repeat("#", heading.Level)
 
@@ -183,11 +183,6 @@ func (r *Renderer) visitImage(node ast.Node) (string, error) {
 func (r *Renderer) visitCodeBlock(node ast.Node) (string, error) {
 	s := string(node.Lines().Value(r.source))
 	s = strings.Trim(s, "\n")
-
-	// since every gopher clients dont react the same
-	// it could be interesting to paste the code into a new text file
-	//
-	// then we will add a new references the the hashmap
 
 	if node.HasBlankPreviousLines() {
 		s = "\n" + s
@@ -312,8 +307,8 @@ func (r *Renderer) Visit(node ast.Node) (string, error) {
 	//
 	// depth 0 -> document/root node
 	if len(r.referencesQueue) > 0 &&
-		(r.options.ReferencesPosition == renderer.AfterBlocks && r.depth == 1) ||
-		(r.options.ReferencesPosition == renderer.AfterTraverse && r.depth == 0) {
+		(r.options.ReferencePosition == renderer.AfterBlocks && r.depth == 1) ||
+		(r.options.ReferencePosition == renderer.AfterTraverse && r.depth == 0) {
 		for _, line := range r.referencesQueue {
 			s += line + "\n"
 		}
