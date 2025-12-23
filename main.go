@@ -18,6 +18,7 @@ func main() {
 		filename                string
 		options                 walker.Options
 		referencePositionString string
+		fileFormatString        string
 	)
 
 	flag.StringVar(
@@ -51,11 +52,11 @@ func main() {
 		false,
 		"Write fancy headers (with hashtags as prefix)",
 	)
-	flag.BoolVar(
-		&options.WriteGPHFormat,
-		"gph-format",
-		false,
-		"Use gph format instead of gophermap",
+	flag.StringVar(
+		&fileFormatString,
+		"file-format",
+		"gophermap",
+		"Output file format ('gophermap', 'gph')",
 	)
 	flag.StringVar(
 		&referencePositionString,
@@ -82,6 +83,13 @@ func main() {
 	}
 
 	options.ReferencePosition = referencePosition
+
+	fileFormat, err := gophermap.NewFileFormatFromString(fileFormatString)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	options.FileFormat = fileFormat
 
 	var source []byte
 	if filename == "" {

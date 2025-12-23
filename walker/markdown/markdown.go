@@ -62,10 +62,10 @@ func (w *Walker) createLineString(
 	}
 
 	var s string
-	if w.options.WriteGPHFormat {
-		s = line.StringGPHFormat()
-	} else {
+	if w.options.FileFormat == gophermap.FileFormatGophermap {
 		s = line.String()
+	} else {
+		s = line.StringGPHFormat()
 	}
 
 	return s, nil

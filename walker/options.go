@@ -16,7 +16,7 @@ type Options struct {
 	// Write fancy headers with hashtags as prefix
 	WriteFancyHeader bool
 	// Write using the GPH format
-	WriteGPHFormat bool
+	FileFormat gophermap.FileFormat
 }
 
 func NewDefaultOptions(domain string) *Options {
@@ -26,6 +26,6 @@ func NewDefaultOptions(domain string) *Options {
 		Domain:            domain,
 		Port:              gophermap.DefaultGopherPort,
 		WriteFancyHeader:  false,
-		WriteGPHFormat:    false,
+		FileFormat:        gophermap.FileFormatGophermap,
 	}
 }
