@@ -1,6 +1,8 @@
 package gophermap
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Line struct {
 	itemType    ItemType

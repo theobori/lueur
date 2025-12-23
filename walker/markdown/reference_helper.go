@@ -115,6 +115,7 @@ func (w *Walker) walkReferenceHelper(
 		}
 
 		path = pathFromURL(u)
+		// TODO: handle gopher://host and modify path if needed
 	} else {
 		itemType = gophermap.NewItemTypeFromPath(destination)
 		domain = w.options.Domain

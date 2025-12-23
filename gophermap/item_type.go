@@ -56,7 +56,7 @@ func NewItemTypeFromURL(u *url.URL) ItemType {
 		return ItemTypeTelnet
 	case "tn3270": // See http://pages.upf.pf/Patrick.Capolsini/cours_internet/URLs.htm
 		return ItemTypeTelnet3270
-	case "file":
+	case "file", "gopher":
 		return NewItemTypeFromPath(u.Path)
 	default: // Return HTML item type by default
 		return ItemTypeHTML

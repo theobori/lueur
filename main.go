@@ -56,13 +56,13 @@ func main() {
 		&fileFormatString,
 		"file-format",
 		"gophermap",
-		"Output file format ('gophermap', 'gph')",
+		"Output file format (\"gophermap\", \"gph\")",
 	)
 	flag.StringVar(
 		&referencePositionString,
 		"reference-position",
 		"after-block",
-		"Used to control where the references are outputed ('after-block', 'after-all')",
+		"Used to control where the references are outputed (\"after-block\", \"after-all\")",
 	)
 
 	flag.Parse()
