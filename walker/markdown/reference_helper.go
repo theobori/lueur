@@ -2,7 +2,6 @@ package markdown
 
 import (
 	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/theobori/lueur/gophermap"
@@ -33,49 +32,6 @@ func (w *Walker) ContainsOnlyRefs(node ast.Node) (bool, error) {
 	return true, nil
 }
 
-func pathFromURL(u *url.URL) string {
-	var path string
-
-	switch u.Scheme {
-	case "https", "http":
-		path = "URL:" + u.String()
-	case "telnet", "tn3270":
-		path = u.User.Username()
-		if path == "" {
-			path = "user"
-		}
-	// TODO: research on the others ?
-	default:
-		if u.Path == "" {
-			path = "/"
-		} else {
-			path = u.Path
-		}
-	}
-
-	return path
-}
-
-func portFromURL(u *url.URL) (int, error) {
-	portString := u.Port()
-
-	var (
-		port int
-		err  error
-	)
-
-	if portString == "" {
-		port = gophermap.PortFromProtocol(u.Scheme)
-	} else {
-		port, err = strconv.Atoi(portString)
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	return port, nil
-}
-
 func (w *Walker) walkReferenceHelper(
 	node ast.Node, title string, destination string,
 ) (string, error) {
@@ -91,6 +47,10 @@ func (w *Walker) walkReferenceHelper(
 		if err != nil {
 			return "", err
 		}
+	}
+
+	if description == "" {
+		description = destination
 	}
 
 	var (
@@ -109,13 +69,12 @@ func (w *Walker) walkReferenceHelper(
 		itemType = gophermap.NewItemTypeFromURL(u)
 		domain = u.Host
 
-		port, err = portFromURL(u)
+		port, err = gophermap.PortFromURL(u)
 		if err != nil {
 			return "", err
 		}
 
-		path = pathFromURL(u)
-		// TODO: handle gopher://host and modify path if needed
+		path = gophermap.PathFromURL(u)
 	} else {
 		itemType = gophermap.NewItemTypeFromPath(destination)
 		domain = w.options.Domain

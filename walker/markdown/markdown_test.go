@@ -207,7 +207,7 @@ func TestWalkImage(t *testing.T) {
 		},
 		{
 			source:   "![](/photo.jpg)",
-			expected: emptyGophermapLineString + "I\t/photo.jpg\tlocalhost\t70\n",
+			expected: emptyGophermapLineString + "I/photo.jpg\t/photo.jpg\tlocalhost\t70\n",
 		},
 	}
 
