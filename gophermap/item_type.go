@@ -28,24 +28,45 @@ const (
 	ItemTypeSoundFile
 )
 
-var itemtypeToTag = map[ItemType]byte{
-	ItemTypeTextFile:                '0',
-	ItemTypeGopherMenu:              '1',
-	ItemTypeCCSONameserver:          '2',
-	ItemTypeErrorCode:               '3',
-	ItemTypeBinHexEncodedFile:       '4',
-	ItemTypeDOSBinary:               '5',
-	ItemTypeUNIXUuencodedFile:       '6',
-	ItemTypeGopherFullTextSearch:    '7',
-	ItemTypeTelnet:                  '8',
-	ItemTypeBinaryFile:              '9',
-	ItemTypeMirrorOrAlternateServer: '+',
-	ItemTypeGIFFile:                 'g',
-	ItemTypeOtherImageFile:          'I',
-	ItemTypeTelnet3270:              'T',
-	ItemTypeHTML:                    'h',
-	ItemTypeInlineText:              'i',
-	ItemTypeSoundFile:               's',
+func (i *ItemType) String() string {
+	switch *i {
+	case ItemTypeTextFile:
+		return "0"
+	case ItemTypeGopherMenu:
+		return "1"
+	case ItemTypeCCSONameserver:
+		return "2"
+	case ItemTypeErrorCode:
+		return "3"
+	case ItemTypeBinHexEncodedFile:
+		return "4"
+	case ItemTypeDOSBinary:
+		return "5"
+	case ItemTypeUNIXUuencodedFile:
+		return "6"
+	case ItemTypeGopherFullTextSearch:
+		return "7"
+	case ItemTypeTelnet:
+		return "8"
+	case ItemTypeBinaryFile:
+		return "9"
+	case ItemTypeMirrorOrAlternateServer:
+		return "+"
+	case ItemTypeGIFFile:
+		return "g"
+	case ItemTypeOtherImageFile:
+		return "I"
+	case ItemTypeTelnet3270:
+		return "T"
+	case ItemTypeHTML:
+		return "h"
+	case ItemTypeInlineText:
+		return "i"
+	case ItemTypeSoundFile:
+		return "s"
+	default:
+		return "1"
+	}
 }
 
 func NewItemTypeFromURL(u *url.URL) ItemType {
@@ -63,14 +84,7 @@ func NewItemTypeFromURL(u *url.URL) ItemType {
 	}
 }
 
-func NewItemTypeFromPath(path string) ItemType {
-	if strings.HasSuffix(path, "/") {
-		return ItemTypeGopherMenu
-	}
-
-	pathParts := strings.Split(path, ".")
-	extension := pathParts[len(pathParts)-1]
-
+func NewItemTypeFromExtension(extension string) ItemType {
 	switch extension {
 	case "txt":
 		return ItemTypeTextFile
@@ -108,6 +122,13 @@ func NewItemTypeFromPath(path string) ItemType {
 	}
 }
 
-func (i *ItemType) String() string {
-	return string(itemtypeToTag[*i])
+func NewItemTypeFromPath(path string) ItemType {
+	if strings.HasSuffix(path, "/") {
+		return ItemTypeGopherMenu
+	}
+
+	pathParts := strings.Split(path, ".")
+	extension := pathParts[len(pathParts)-1]
+
+	return NewItemTypeFromExtension(extension)
 }

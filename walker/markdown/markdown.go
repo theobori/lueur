@@ -17,11 +17,8 @@ import (
 type Walker struct {
 	node    ast.Node
 	source  []byte
-	depth   int
 	options *walker.Options
-
-	// Queue that manage the references output
-	referencesQueue []string
+	ctx     *walker.Context
 }
 
 func NewWalkerWithOptions(source []byte, options *walker.Options) *Walker {
@@ -33,42 +30,17 @@ func NewWalkerWithOptions(source []byte, options *walker.Options) *Walker {
 	node := p.Parse(text.NewReader(source))
 
 	return &Walker{
-		node:            node,
-		source:          source,
-		depth:           0,
-		options:         options,
-		referencesQueue: []string{},
+		node:    node,
+		source:  source,
+		ctx:     walker.NewDefaultContext(),
+		options: options,
 	}
 }
 
 func NewWalker(source []byte, domain string) *Walker {
-	return NewWalkerWithOptions(source, walker.NewDefaultOptions(domain))
-}
+	defaultOptions, _ := walker.NewDefaultOptions(domain)
 
-func (w *Walker) createLineString(
-	itemType gophermap.ItemType, description string,
-	destination string, domain string, port int,
-) (string, error) {
-	line, err := gophermap.NewLine(
-		itemType,
-		description,
-		destination,
-		domain,
-		port,
-	)
-
-	if err != nil {
-		return "", nil
-	}
-
-	var s string
-	if w.options.FileFormat == gophermap.FileFormatGophermap {
-		s = line.String()
-	} else {
-		s = line.StringGPHFormat()
-	}
-
-	return s, nil
+	return NewWalkerWithOptions(source, defaultOptions)
 }
 
 func (w *Walker) walkEmphasis(node ast.Node) (string, error) {
@@ -160,7 +132,7 @@ func (w *Walker) walkBlockQuote(node ast.Node) (string, error) {
 }
 
 func (w *Walker) walkList(_ ast.Node) (string, error) {
-	// TODO: implement lists
+	// TODO: implement
 	return "", nil
 }
 
@@ -202,10 +174,12 @@ func (w *Walker) walkTextBlock(node ast.Node) (string, error) {
 }
 
 func (w *Walker) walkHTMLBlock(_ ast.Node) (string, error) {
+	// TODO: implements
 	return "", nil
 }
 
 func (w *Walker) walkTable(_ ast.Node) (string, error) {
+	// TODO: implements
 	return "", nil
 }
 
@@ -255,11 +229,11 @@ func (w *Walker) walk(node ast.Node) (string, error) {
 func (w *Walker) formatDepthOneText(s string) (string, error) {
 	s = strings.TrimRight(s, "\n")
 
-	if w.options.ReferencePosition == walker.AfterTraverse && s == "" {
+	if w.options.ReferencePosition() == walker.AfterTraverse && s == "" {
 		return "", nil
 	}
 
-	s = wordwrap.String(s, w.options.WordWrapLimit)
+	s = wordwrap.String(s, w.options.WordWrapLimit())
 
 	sDest := ""
 	linesRaw := strings.SplitSeq(s, "\n")
@@ -271,36 +245,32 @@ func (w *Walker) formatDepthOneText(s string) (string, error) {
 		// remove antislash at the end
 		lineRaw = strings.TrimRight(lineRaw, "\\")
 
-		lineString, err := w.createLineString(
-			gophermap.ItemTypeInlineText,
-			lineRaw,
-			"/",
-			w.options.Domain,
-			w.options.Port,
-		)
-		if err != nil {
-			return "", err
-		}
+		line := gophermap.Line{
+			ItemType:    gophermap.ItemTypeInlineText,
+			Description: lineRaw,
+			Path:        "/",
+			Domain:      w.options.Domain(),
+			Port:        w.options.Port()}
 
-		sDest += lineString + "\n"
+		sDest += line.StringFromFileFormat(w.options.FileFormat()) + "\n"
 	}
 
 	return sDest, nil
 }
 
 func (w *Walker) Walk(node ast.Node) (string, error) {
-	w.depth += 1
+	w.ctx.Depth.Add()
 
 	s, err := w.walk(node)
 	if err != nil {
 		return "", err
 	}
 
-	w.depth -= 1
+	w.ctx.Depth.Remove()
 
 	// the string result at depth 1 should always be gophermap inline text
 	// since refs are processed after
-	if w.depth == 1 {
+	if w.ctx.Depth.Value() == 1 {
 		s, err = w.formatDepthOneText(s)
 		if err != nil {
 			return "", err
@@ -310,14 +280,14 @@ func (w *Walker) Walk(node ast.Node) (string, error) {
 	// output the references by using the dedicated Lines
 	//
 	// depth 0 -> document/root node
-	if len(w.referencesQueue) > 0 &&
-		(w.options.ReferencePosition == walker.AfterBlocks && w.depth == 1) ||
-		(w.options.ReferencePosition == walker.AfterTraverse && w.depth == 0) {
-		for _, line := range w.referencesQueue {
-			s += line + "\n"
+	if len(w.ctx.ReferencesQueue) > 0 &&
+		(w.options.ReferencePosition() == walker.AfterBlocks && w.ctx.Depth.Value() == 1) ||
+		(w.options.ReferencePosition() == walker.AfterTraverse && w.ctx.Depth.Value() == 0) {
+		for _, line := range w.ctx.ReferencesQueue {
+			s += line.StringFromFileFormat(w.options.FileFormat()) + "\n"
 		}
 
-		w.referencesQueue = nil
+		w.ctx.ReferencesQueue = nil
 	}
 
 	return s, nil

@@ -21,3 +21,15 @@ func NewOutputPositionFromString(s string) (OutputPosition, error) {
 		return AfterBlocks, fmt.Errorf("unsupported string value: %s", s)
 	}
 }
+
+func (o *OutputPosition) String() string {
+	switch *o {
+	case AfterBlocks:
+		return "after-block"
+	case AfterTraverse:
+		return "after-all"
+	// Cannot reach this block
+	default:
+		return "unknown"
+	}
+}

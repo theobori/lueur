@@ -12,7 +12,7 @@ iis a French word for vivid, momentary expression.	/	localhost	70
 i	/	localhost	70
 iThis GitHub repository is a KISS project in the form of a	/	localhost	70
 iCLI tool. It allows you to convert Markdown and HTML to	/	localhost	70
-igophermap and .gph files. This project was originally	/	localhost	70
+igophermap, .gph and .txt files. This project was originally	/	localhost	70
 idesigned to convert blog posts written in Markdown format.	/	localhost	70
 iThe goldmark project was used to parse the Markdown.	/	localhost	70
 hgoldmark	URL:https://github.com/yuin/goldmark	github.com	443
@@ -28,11 +28,35 @@ hlagrange	URL:https://gmi.skyjake.fi/lagrange/	gmi.skyjake.fi	443
 hGophie	URL:https://gophie.org/	gophie.org	443
 0gopher://baud.baby/0/phlog/fs20181102.txt	/phlog/fs20181102.txt	baud.baby	70
 i	/	localhost	70
+iThis project is still under construction, HTML is not	/	localhost	70
+iimplemented and only the most basic features will be, such	/	localhost	70
+ias basic tags, CSS will not be supported.	/	localhost	70
+i	/	localhost	70
 i## Getting started	/	localhost	70
 i	/	localhost	70
 iTo start using the tool, simply run the following command.	/	localhost	70
 i	/	localhost	70
 ilueur -help	/	localhost	70
+i	/	localhost	70
+iBelow are the CLI options.	/	localhost	70
+i	/	localhost	70
+iUsage of lueur:	/	localhost	70
+i  -domain string	/	localhost	70
+i        Gopher domain	/	localhost	70
+i  -fancy-header	/	localhost	70
+i        Write fancy headers (with hashtags as prefix)	/	localhost	70
+i  -file-format string	/	localhost	70
+i        Output file format ("gophermap", "gph", "txt") (default	/	localhost	70
+i"gophermap")	/	localhost	70
+i  -filename string	/	localhost	70
+i        Read input from a file	/	localhost	70
+i  -port int	/	localhost	70
+i        Gopher port (default 70)	/	localhost	70
+i  -reference-position string	/	localhost	70
+i        Used to control where the references are outputed	/	localhost	70
+i("after-block", "after-all") (default "after-block")	/	localhost	70
+i  -word-wrap-limit int	/	localhost	70
+i        Word wrap limit (default 80)	/	localhost	70
 i	/	localhost	70
 i## The Gopher protocol	/	localhost	70
 i	/	localhost	70

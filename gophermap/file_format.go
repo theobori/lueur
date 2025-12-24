@@ -7,6 +7,7 @@ type FileFormat int
 const (
 	FileFormatGPH FileFormat = iota
 	FileFormatGophermap
+	FileFormatTxt
 )
 
 func NewFileFormatFromString(s string) (FileFormat, error) {
@@ -15,6 +16,8 @@ func NewFileFormatFromString(s string) (FileFormat, error) {
 		return FileFormatGPH, nil
 	case "gophermap":
 		return FileFormatGophermap, nil
+	case "txt":
+		return FileFormatTxt, nil
 	default:
 		return FileFormatGophermap, fmt.Errorf(
 			"'%s' is not available, it must be '%s' or '%s'",
@@ -22,5 +25,19 @@ func NewFileFormatFromString(s string) (FileFormat, error) {
 			"gph",
 			"gophermap",
 		)
+	}
+}
+
+func (f *FileFormat) String() string {
+	switch *f {
+	case FileFormatGPH:
+		return "gph"
+	case FileFormatTxt:
+		return "txt"
+	case FileFormatGophermap:
+		return "gophermap"
+	// Cannot reach this block
+	default:
+		return "unknown"
 	}
 }

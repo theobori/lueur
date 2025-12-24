@@ -9,21 +9,21 @@ import (
 )
 
 var (
-	options walker.Options = walker.Options{
-		WordWrapLimit:     80,
-		ReferencePosition: walker.AfterBlocks,
-		Domain:            "localhost",
-		Port:              70,
-		WriteFancyHeader:  false,
-		FileFormat:        gophermap.FileFormatGophermap,
-	}
+	options, _ = walker.NewOptions(
+		80,
+		walker.AfterBlocks,
+		"localhost",
+		70,
+		false,
+		gophermap.FileFormatGophermap,
+	)
 
 	emptyGophermapLine, _ = gophermap.NewLine(
 		gophermap.ItemTypeInlineText,
 		"",
 		"/",
-		options.Domain,
-		options.Port,
+		options.Domain(),
+		options.Port(),
 	)
 	emptyGophermapLineString string = emptyGophermapLine.String() + "\n"
 
@@ -35,21 +35,25 @@ type Comparable struct {
 	expected string
 }
 
+func testCompHelper(t *testing.T, comp Comparable, options *walker.Options) {
+	w := NewWalkerWithOptions([]byte(comp.source), options)
+
+	s, err := w.WalkFromRoot()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if s != comp.expected {
+		diff := dmp.DiffMain(s, comp.expected, false)
+		prettyDiffString := dmp.DiffPrettyText(diff)
+
+		t.Fatal(prettyDiffString)
+	}
+}
+
 func testCompsHelper(t *testing.T, comps []Comparable, options *walker.Options) {
 	for _, comp := range comps {
-		w := NewWalkerWithOptions([]byte(comp.source), options)
-
-		s, err := w.WalkFromRoot()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if s != comp.expected {
-			diff := dmp.DiffMain(s, comp.expected, false)
-			prettyDiffString := dmp.DiffPrettyText(diff)
-
-			t.Fatal(prettyDiffString)
-		}
+		testCompHelper(t, comp, options)
 	}
 }
 
@@ -69,7 +73,7 @@ func TestWalkEmphasis(t *testing.T) {
 		},
 	}
 
-	testCompsHelper(t, tests, &options)
+	testCompsHelper(t, tests, options)
 }
 
 func TestWalkHeading(t *testing.T) {
@@ -79,16 +83,16 @@ func TestWalkHeading(t *testing.T) {
 			expected: emptyGophermapLineString + "i# h1\t/\tlocalhost\t70\n",
 		},
 		{
-			source:   "## h1",
-			expected: emptyGophermapLineString + "i## h1\t/\tlocalhost\t70\n",
+			source:   "## h2",
+			expected: emptyGophermapLineString + "i## h2\t/\tlocalhost\t70\n",
 		},
 		{
-			source:   "### h1",
-			expected: emptyGophermapLineString + "i### h1\t/\tlocalhost\t70\n",
+			source:   "### h3",
+			expected: emptyGophermapLineString + "i### h3\t/\tlocalhost\t70\n",
 		},
 		{
-			source:   "#### h1",
-			expected: emptyGophermapLineString + "i#### h1\t/\tlocalhost\t70\n",
+			source:   "#### h4",
+			expected: emptyGophermapLineString + "i#### h4\t/\tlocalhost\t70\n",
 		},
 		{
 			source: `line1
@@ -102,7 +106,7 @@ i## line3	/	localhost	70
 		},
 	}
 
-	localOptions := options
+	localOptions := *options
 	localOptions.WriteFancyHeader = true
 
 	testCompsHelper(t, tests, &localOptions)
@@ -120,7 +124,7 @@ func TestWalkAutoLink(t *testing.T) {
 		},
 	}
 
-	testCompsHelper(t, tests, &options)
+	testCompsHelper(t, tests, options)
 }
 
 func TestWalkCodeBlock(t *testing.T) {
@@ -171,7 +175,7 @@ icodeblock	/	localhost	70
 		},
 	}
 
-	testCompsHelper(t, tests, &options)
+	testCompsHelper(t, tests, options)
 }
 
 func TestWalkLink(t *testing.T) {
@@ -196,7 +200,7 @@ hinline link	URL:https://example.com	example.com	443
 		},
 	}
 
-	testCompsHelper(t, tests, &options)
+	testCompsHelper(t, tests, options)
 }
 
 func TestWalkImage(t *testing.T) {
@@ -211,7 +215,7 @@ func TestWalkImage(t *testing.T) {
 		},
 	}
 
-	testCompsHelper(t, tests, &options)
+	testCompsHelper(t, tests, options)
 }
 
 func TestWalkBlockQuote(t *testing.T) {
@@ -231,7 +235,7 @@ ithird line”	/	localhost	70
 		},
 	}
 
-	testCompsHelper(t, tests, &options)
+	testCompsHelper(t, tests, options)
 }
 
 func TestWalkCodeSpan(t *testing.T) {
@@ -246,7 +250,7 @@ func TestWalkCodeSpan(t *testing.T) {
 		},
 	}
 
-	testCompsHelper(t, tests, &options)
+	testCompsHelper(t, tests, options)
 }
 
 func TestWalkParagraph(t *testing.T) {
@@ -265,7 +269,7 @@ iSuspendisse eu quam venenatis ipsum scelerisque scelerisque.	/	localhost	70
 		},
 	}
 
-	testCompsHelper(t, tests, &options)
+	testCompsHelper(t, tests, options)
 }
 
 func TestWalkDocument(t *testing.T) {
@@ -445,5 +449,76 @@ i	/	localhost	70
 		},
 	}
 
-	testCompsHelper(t, tests, &options)
+	testCompsHelper(t, tests, options)
+}
+
+func TestWalkDocumentReferencesAfterAll(t *testing.T) {
+	source := `[a](https://a.com) tttt uu vvvvv https://a.com
+
+https://a.com
+https://a.com
+[a](https://a.com)
+
+https://a.com
+
+aaaa
+aaaa
+
+aaaa
+aaaa
+`
+
+	testGopherMap := Comparable{
+		source: source, expected: emptyGophermapLineString + `i(a)[1] tttt uu vvvvv (https://a.com)[2]	/	localhost	70
+i	/	localhost	70
+i(https://a.com)[3]	/	localhost	70
+i(https://a.com)[4]	/	localhost	70
+i(a)[5]	/	localhost	70
+i	/	localhost	70
+i(https://a.com)[6]	/	localhost	70
+i	/	localhost	70
+iaaaa	/	localhost	70
+iaaaa	/	localhost	70
+i	/	localhost	70
+iaaaa	/	localhost	70
+iaaaa	/	localhost	70
+h[1] a	URL:https://a.com	a.com	443
+h[2] https://a.com	URL:https://a.com	a.com	443
+h[3] https://a.com	URL:https://a.com	a.com	443
+h[4] https://a.com	URL:https://a.com	a.com	443
+h[5] a	URL:https://a.com	a.com	443
+h[6] https://a.com	URL:https://a.com	a.com	443
+`,
+	}
+
+	var localOptions walker.Options
+
+	localOptions = *options
+	localOptions.SetReferencePositionAndFileFormat(walker.AfterTraverse, gophermap.FileFormatGophermap)
+	testCompHelper(t, testGopherMap, &localOptions)
+
+	testTxt := Comparable{
+		source: source,
+		expected: `
+(a)[1] tttt uu vvvvv https://a.com
+
+https://a.com
+https://a.com
+(a)[2]
+
+https://a.com
+
+aaaa
+aaaa
+
+aaaa
+aaaa
+[1] https://a.com
+[2] https://a.com
+`,
+	}
+
+	localOptions = *options
+	localOptions.SetReferencePositionAndFileFormat(walker.AfterTraverse, gophermap.FileFormatTxt)
+	testCompHelper(t, testTxt, &localOptions)
 }

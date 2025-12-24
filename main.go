@@ -16,9 +16,12 @@ func main() {
 	var (
 		err                     error
 		filename                string
-		options                 walker.Options
 		referencePositionString string
 		fileFormatString        string
+		wordWrapLimit           int
+		domain                  string
+		port                    int
+		writeFancyHeader        bool
 	)
 
 	flag.StringVar(
@@ -27,27 +30,26 @@ func main() {
 		"",
 		"Read input from a file",
 	)
-	// walker options as CLI flags
 	flag.StringVar(
-		&options.Domain,
+		&domain,
 		"domain",
 		"",
 		"Gopher domain",
 	)
 	flag.IntVar(
-		&options.Port,
+		&port,
 		"port",
 		gophermap.DefaultGopherPort,
 		"Gopher port",
 	)
 	flag.IntVar(
-		&options.WordWrapLimit,
+		&wordWrapLimit,
 		"word-wrap-limit",
 		80,
 		"Word wrap limit",
 	)
 	flag.BoolVar(
-		&options.WriteFancyHeader,
+		&writeFancyHeader,
 		"fancy-header",
 		false,
 		"Write fancy headers (with hashtags as prefix)",
@@ -56,7 +58,7 @@ func main() {
 		&fileFormatString,
 		"file-format",
 		"gophermap",
-		"Output file format (\"gophermap\", \"gph\")",
+		"Output file format (\"gophermap\", \"gph\", \"txt\")",
 	)
 	flag.StringVar(
 		&referencePositionString,
@@ -67,29 +69,27 @@ func main() {
 
 	flag.Parse()
 
-	if options.Port < 0 {
-		log.Fatalln("the port must be a positive integer")
-	}
-	if options.WordWrapLimit < 50 {
-		log.Fatalln("the word wrap limit must be at least 50")
-	}
-	if options.Domain == "" {
-		log.Fatalln("you must set the domain flag")
-	}
-
 	referencePosition, err := walker.NewOutputPositionFromString(referencePositionString)
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	options.ReferencePosition = referencePosition
 
 	fileFormat, err := gophermap.NewFileFormatFromString(fileFormatString)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	options.FileFormat = fileFormat
+	options, err := walker.NewOptions(
+		wordWrapLimit,
+		referencePosition,
+		domain,
+		port,
+		writeFancyHeader,
+		fileFormat,
+	)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	var source []byte
 	if filename == "" {
@@ -102,7 +102,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	w := markdown.NewWalkerWithOptions(source, &options)
+	w := markdown.NewWalkerWithOptions(source, options)
 
 	destination, err := w.WalkFromRoot()
 	if err != nil {
