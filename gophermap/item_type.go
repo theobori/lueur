@@ -69,6 +69,15 @@ func (i *ItemType) String() string {
 	}
 }
 
+func IsByteItemType(b byte) bool {
+	switch b {
+	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', 'g', 'I', 'T', 'h', 'i', 's':
+		return true
+	default:
+		return false
+	}
+}
+
 func NewItemTypeFromURL(u *url.URL) ItemType {
 	switch u.Scheme {
 	case "http", "https":

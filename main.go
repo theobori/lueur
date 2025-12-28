@@ -9,7 +9,6 @@ import (
 
 	"github.com/theobori/lueur/gophermap"
 	"github.com/theobori/lueur/walker"
-	"github.com/theobori/lueur/walker/markdown"
 )
 
 func main() {
@@ -102,7 +101,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	w := markdown.NewWalkerWithOptions(source, options)
+	w := walker.NewWalkerWithOptions(source, options)
 
 	destination, err := w.WalkFromRoot()
 	if err != nil {

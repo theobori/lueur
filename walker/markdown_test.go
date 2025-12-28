@@ -1,17 +1,16 @@
-package markdown
+package walker
 
 import (
 	"testing"
 
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/theobori/lueur/gophermap"
-	"github.com/theobori/lueur/walker"
 )
 
 var (
-	options, _ = walker.NewOptions(
+	options, _ = NewOptions(
 		80,
-		walker.AfterBlocks,
+		AfterBlocks,
 		"localhost",
 		70,
 		false,
@@ -35,7 +34,7 @@ type Comparable struct {
 	expected string
 }
 
-func testCompHelper(t *testing.T, comp Comparable, options *walker.Options) {
+func testCompHelper(t *testing.T, comp Comparable, options *Options) {
 	w := NewWalkerWithOptions([]byte(comp.source), options)
 
 	s, err := w.WalkFromRoot()
@@ -51,13 +50,15 @@ func testCompHelper(t *testing.T, comp Comparable, options *walker.Options) {
 	}
 }
 
-func testCompsHelper(t *testing.T, comps []Comparable, options *walker.Options) {
+func testCompsHelper(t *testing.T, comps []Comparable, options *Options) {
 	for _, comp := range comps {
 		testCompHelper(t, comp, options)
 	}
 }
 
 func TestWalkEmphasis(t *testing.T) {
+	t.Parallel()
+
 	tests := []Comparable{
 		{
 			source:   "**hello world**",
@@ -77,6 +78,8 @@ func TestWalkEmphasis(t *testing.T) {
 }
 
 func TestWalkHeading(t *testing.T) {
+	t.Parallel()
+
 	tests := []Comparable{
 		{
 			source:   "# h1",
@@ -113,14 +116,20 @@ i## line3	/	localhost	70
 }
 
 func TestWalkAutoLink(t *testing.T) {
+	t.Parallel()
+
 	tests := []Comparable{
 		{
-			source:   "https://a.com",
-			expected: emptyGophermapLineString + "hhttps://a.com\tURL:https://a.com\ta.com\t443\n",
+			source: "https://a.com",
+			expected: emptyGophermapLineString + `ihttps://a.com	/	localhost	70
+hhttps://a.com	URL:https://a.com	a.com	443
+`,
 		},
 		{
-			source:   "http://a.com",
-			expected: emptyGophermapLineString + "hhttp://a.com\tURL:http://a.com\ta.com\t80\n",
+			source: "http://a.com",
+			expected: emptyGophermapLineString + `ihttp://a.com	/	localhost	70
+hhttp://a.com	URL:http://a.com	a.com	80
+`,
 		},
 	}
 
@@ -128,6 +137,8 @@ func TestWalkAutoLink(t *testing.T) {
 }
 
 func TestWalkCodeBlock(t *testing.T) {
+	t.Parallel()
+
 	tests := []Comparable{
 		{
 			source: "```" + `
@@ -179,18 +190,26 @@ icodeblock	/	localhost	70
 }
 
 func TestWalkLink(t *testing.T) {
+	t.Parallel()
+
 	tests := []Comparable{
 		{
-			source:   "[text link](https://example.com)",
-			expected: emptyGophermapLineString + "htext link\tURL:https://example.com\texample.com\t443\n",
+			source: "[text link](https://example.com)",
+			expected: emptyGophermapLineString + `itext link	/	localhost	70
+htext link	URL:https://example.com	example.com	443
+`,
 		},
 		{
-			source:   "[link](http://example.com)",
-			expected: emptyGophermapLineString + "hlink\tURL:http://example.com\texample.com\t80\n",
+			source: "[link](http://example.com)",
+			expected: emptyGophermapLineString + `ilink	/	localhost	70
+hlink	URL:http://example.com	example.com	80
+`,
 		},
 		{
-			source:   "[multiple words link](https://test.org/path)",
-			expected: emptyGophermapLineString + "hmultiple words link\tURL:https://test.org/path\ttest.org\t443\n",
+			source: "[multiple words link](https://test.org/path)",
+			expected: emptyGophermapLineString + `imultiple words link	/	localhost	70
+hmultiple words link	URL:https://test.org/path	test.org	443
+`,
 		},
 		{
 			source: "Some text [inline link](https://example.com) and more text",
@@ -204,14 +223,20 @@ hinline link	URL:https://example.com	example.com	443
 }
 
 func TestWalkImage(t *testing.T) {
+	t.Parallel()
+
 	tests := []Comparable{
 		{
-			source:   "![alt text](https://example.com/image.png)",
-			expected: emptyGophermapLineString + "halt text\tURL:https://example.com/image.png\texample.com\t443\n",
+			source: "![alt text](https://example.com/image.png)",
+			expected: emptyGophermapLineString + `ialt text	/	localhost	70
+halt text	URL:https://example.com/image.png	example.com	443
+`,
 		},
 		{
-			source:   "![](/photo.jpg)",
-			expected: emptyGophermapLineString + "I/photo.jpg\t/photo.jpg\tlocalhost\t70\n",
+			source: "![](/photo.jpg)",
+			expected: emptyGophermapLineString + `i/photo.jpg	/	localhost	70
+I/photo.jpg	/photo.jpg	localhost	70
+`,
 		},
 	}
 
@@ -219,6 +244,8 @@ func TestWalkImage(t *testing.T) {
 }
 
 func TestWalkBlockQuote(t *testing.T) {
+	t.Parallel()
+
 	tests := []Comparable{
 		{
 			source:   "> single line quote",
@@ -239,6 +266,8 @@ ithird line”	/	localhost	70
 }
 
 func TestWalkCodeSpan(t *testing.T) {
+	t.Parallel()
+
 	tests := []Comparable{
 		{
 			source:   "`hello world`",
@@ -254,6 +283,8 @@ func TestWalkCodeSpan(t *testing.T) {
 }
 
 func TestWalkParagraph(t *testing.T) {
+	t.Parallel()
+
 	tests := []Comparable{
 		{
 			source: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed laoreet eros nec interdum vestibulum. Sed elementum scelerisque euismod. Praesent pellentesque justo eu ex iaculis ullamcorper. Nulla suscipit purus quis sagittis sagittis. Sed eget tempus odio. Interdum et malesuada fames ac ante ipsum primis in faucibus. Suspendisse eget orci erat. Sed volutpat maximus urna eu commodo. Praesent tristique non nibh blandit ultricies. Etiam tempus nisi urna, non accumsan ante laoreet ac. Nam et lectus pharetra risus rhoncus facilisis. Suspendisse eu quam venenatis ipsum scelerisque scelerisque. `,
@@ -273,6 +304,8 @@ iSuspendisse eu quam venenatis ipsum scelerisque scelerisque.	/	localhost	70
 }
 
 func TestWalkDocument(t *testing.T) {
+	t.Parallel()
+
 	tests := []Comparable{
 		{
 			source: `# Conclusion
@@ -294,18 +327,12 @@ c
 
 ## H2
 
-` + "```" +
-				`
 codeblockcodeblockcodeblockcodeblock
 codeblockcodeblockcodeblock
 codeblockcodeblockcodeblock
 codeblockcodeblockcodeblockcodeblockcodeblock
 codeblockcodeblock
 codeblock
-` + "```" +
-				`
-
-
 
 hello
 ## HELLO a a\
@@ -407,14 +434,22 @@ iHello world https://example.com my-link	/	localhost	70
 hhttps://example.com	URL:https://example.com	example.com	443
 hmy-link	URL:https://a.com	a.com	443
 i	/	localhost	70
+ihttps://example.com	/	localhost	70
 hhttps://example.com	URL:https://example.com	example.com	443
 i	/	localhost	70
+ia	/	localhost	70
+ia	/	localhost	70
+ititle	/	localhost	70
+ititle	/	localhost	70
+ititle	/	localhost	70
 ha	URL:https://a.com	a.com	443
 ha	URL:https://a.com	a.com	443
 Ititle	/dog.jpg	localhost	70
 Ititle	/dog.jpg	localhost	70
 Ititle	/dog.jpg	localhost	70
 i	/	localhost	70
+itelnet test	/	localhost	70
+iphlog	/	localhost	70
 8telnet test	user	a.com	23
 1phlog	/phlog	localhost	70
 i	/	localhost	70
@@ -437,6 +472,7 @@ i	/	localhost	70
 iHello alt, world.	/	localhost	70
 Ialt	/cat.png	localhost	70
 i	/	localhost	70
+iAlso see poison.gph	/	localhost	70
 1Also see poison.gph	/poison.gph	localhost	70
 i	/	localhost	70
 iAs i was saying, i had a lot og pages like the b page	/	localhost	70
@@ -453,6 +489,8 @@ i	/	localhost	70
 }
 
 func TestWalkDocumentReferencesAfterAll(t *testing.T) {
+	t.Parallel()
+
 	source := `[a](https://a.com) tttt uu vvvvv https://a.com
 
 https://a.com
@@ -491,10 +529,10 @@ h[6] https://a.com	URL:https://a.com	a.com	443
 `,
 	}
 
-	var localOptions walker.Options
+	var localOptions Options
 
 	localOptions = *options
-	localOptions.SetReferencePositionAndFileFormat(walker.AfterTraverse, gophermap.FileFormatGophermap)
+	localOptions.SetReferencePositionAndFileFormat(AfterTraverse, gophermap.FileFormatGophermap)
 	testCompHelper(t, testGopherMap, &localOptions)
 
 	testTxt := Comparable{
@@ -519,6 +557,50 @@ aaaa
 	}
 
 	localOptions = *options
-	localOptions.SetReferencePositionAndFileFormat(walker.AfterTraverse, gophermap.FileFormatTxt)
+	localOptions.SetReferencePositionAndFileFormat(AfterTraverse, gophermap.FileFormatTxt)
 	testCompHelper(t, testTxt, &localOptions)
+}
+
+func TestWalkList(t *testing.T) {
+	t.Parallel()
+
+	tests := []Comparable{
+		{
+			source: `- a
+- a
+- a
+  - c
+    - aa
+    - d
+      1. e
+      2. e 
+`,
+			expected: emptyGophermapLineString + `i- a	/	localhost	70
+i- a	/	localhost	70
+i- a	/	localhost	70
+i  - c	/	localhost	70
+i    - aa	/	localhost	70
+i    - d	/	localhost	70
+i      1. e	/	localhost	70
+i      2. e	/	localhost	70
+`,
+		},
+		{
+			source: `1. a
+2. b Hello, world! aaa a aa [WW](https://google.fr). AA. d
+3. c
+   1. aa
+      1. aa`,
+			expected: `i	/	localhost	70
+i1. a	/	localhost	70
+i2. b Hello, world! aaa a aa WW. AA. d	/	localhost	70
+i3. c	/	localhost	70
+i  1. aa	/	localhost	70
+i    1. aa	/	localhost	70
+hWW	URL:https://google.fr	google.fr	443
+`,
+		},
+	}
+
+	testCompsHelper(t, tests, options)
 }

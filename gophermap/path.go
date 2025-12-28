@@ -8,8 +8,9 @@ func SafePath(path string) string {
 		return path
 	}
 
-	// 1/path_rest
-	if path[0] != '/' && path[1] == '/' {
+	// 1/path_rest || /1
+	if (n == 2 && path[0] == '/' && IsByteItemType(path[1])) ||
+		(IsByteItemType(path[0]) && path[1] == '/') {
 		return "/" + path[2:]
 	}
 
@@ -18,7 +19,7 @@ func SafePath(path string) string {
 	}
 
 	// /1/path_rest
-	if path[0] == '/' && path[1] != '/' && path[2] == '/' {
+	if path[0] == '/' && IsByteItemType(path[1]) && path[2] == '/' {
 		return path[2:]
 	}
 

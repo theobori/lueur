@@ -6,9 +6,9 @@ import (
 )
 
 type Context struct {
-	Depth           common.Counter
-	Indentation     common.Counter
+	Depth           *common.Counter
 	ReferencesQueue []gophermap.Line
+	Indentation     *common.Indentation
 }
 
 func (c *Context) Reset() {
@@ -23,8 +23,8 @@ func (c *Context) ClearQueues() {
 
 func NewDefaultContext() *Context {
 	return &Context{
-		Depth:           *common.NewDefaultCounter(),
-		Indentation:     *common.NewDefaultCounter(),
+		Depth:           common.NewDefaultCounter(),
 		ReferencesQueue: []gophermap.Line{},
+		Indentation:     common.NewDefaultIndentation(),
 	}
 }

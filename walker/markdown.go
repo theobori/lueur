@@ -1,12 +1,12 @@
-package markdown
+package walker
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/theobori/lueur/gophermap"
-	"github.com/theobori/lueur/walker"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
@@ -17,11 +17,11 @@ import (
 type Walker struct {
 	node    ast.Node
 	source  []byte
-	options *walker.Options
-	ctx     *walker.Context
+	options *Options
+	ctx     *Context
 }
 
-func NewWalkerWithOptions(source []byte, options *walker.Options) *Walker {
+func NewWalkerWithOptions(source []byte, options *Options) *Walker {
 	markdown := goldmark.New(
 		goldmark.WithExtensions(extension.GFM),
 	)
@@ -32,13 +32,13 @@ func NewWalkerWithOptions(source []byte, options *walker.Options) *Walker {
 	return &Walker{
 		node:    node,
 		source:  source,
-		ctx:     walker.NewDefaultContext(),
+		ctx:     NewDefaultContext(),
 		options: options,
 	}
 }
 
 func NewWalker(source []byte, domain string) *Walker {
-	defaultOptions, _ := walker.NewDefaultOptions(domain)
+	defaultOptions, _ := NewDefaultOptions(domain)
 
 	return NewWalkerWithOptions(source, defaultOptions)
 }
@@ -131,9 +131,44 @@ func (w *Walker) walkBlockQuote(node ast.Node) (string, error) {
 	return s, nil
 }
 
-func (w *Walker) walkList(_ ast.Node) (string, error) {
-	// TODO: implement
-	return "", nil
+func (w *Walker) walkList(node ast.Node) (string, error) {
+	list := node.(*ast.List)
+
+	marker := string(list.Marker)
+	items := []string{}
+	i := list.Start
+
+	for c := list.FirstChild(); c != nil; c = c.NextSibling() {
+		w.ctx.Indentation.Indent()
+		line, err := w.Walk(c)
+		if err != nil {
+			return "", err
+		}
+
+		line = strings.Trim(line, "\n")
+		line = marker + " " + line
+
+		if list.IsOrdered() {
+			line = strconv.Itoa(i) + line
+			i += 1
+		}
+
+		w.ctx.Indentation.UnIndent()
+
+		line = w.ctx.Indentation.IndentValue() + strings.TrimLeft(line, " ")
+
+		items = append(items, line)
+	}
+
+	s := strings.Join(items, "\n")
+
+	if list.HasBlankPreviousLines() {
+		s = "\n" + s
+	}
+
+	s += "\n"
+
+	return s, nil
 }
 
 func (w *Walker) walkLink(node ast.Node) (string, error) {
@@ -163,6 +198,23 @@ func (w *Walker) walkCodeBlock(node ast.Node) (string, error) {
 	s += "\n"
 
 	return s, nil
+}
+
+func (w *Walker) walkListItem(node ast.Node) (string, error) {
+	items := []string{}
+
+	for c := node.FirstChild(); c != nil; c = c.NextSibling() {
+		line, err := w.Walk(c)
+		if err != nil {
+			return "", err
+		}
+
+		line = strings.Trim(line, "\n")
+
+		items = append(items, line)
+	}
+
+	return strings.Join(items, "\n"), nil
 }
 
 func (w *Walker) walkDocument(node ast.Node) (string, error) {
@@ -219,6 +271,8 @@ func (w *Walker) walk(node ast.Node) (string, error) {
 		return w.walkHTMLBlock(node)
 	case *ast.CodeSpan:
 		return w.walkCodeSpan(node)
+	case *ast.ListItem:
+		return w.walkListItem(node)
 	case *east.Table:
 		return w.walkTable(node)
 	default:
@@ -229,7 +283,7 @@ func (w *Walker) walk(node ast.Node) (string, error) {
 func (w *Walker) formatDepthOneText(s string) (string, error) {
 	s = strings.TrimRight(s, "\n")
 
-	if w.options.ReferencePosition() == walker.AfterTraverse && s == "" {
+	if w.options.ReferencePosition() == AfterTraverse && s == "" {
 		return "", nil
 	}
 
@@ -237,6 +291,7 @@ func (w *Walker) formatDepthOneText(s string) (string, error) {
 
 	sDest := ""
 	linesRaw := strings.SplitSeq(s, "\n")
+
 	for lineRaw := range linesRaw {
 		// prevention substitutions
 		//
@@ -281,8 +336,8 @@ func (w *Walker) Walk(node ast.Node) (string, error) {
 	//
 	// depth 0 -> document/root node
 	if len(w.ctx.ReferencesQueue) > 0 &&
-		(w.options.ReferencePosition() == walker.AfterBlocks && w.ctx.Depth.Value() == 1) ||
-		(w.options.ReferencePosition() == walker.AfterTraverse && w.ctx.Depth.Value() == 0) {
+		(w.options.ReferencePosition() == AfterBlocks && w.ctx.Depth.Value() == 1) ||
+		(w.options.ReferencePosition() == AfterTraverse && w.ctx.Depth.Value() == 0) {
 		for _, line := range w.ctx.ReferencesQueue {
 			s += line.StringFromFileFormat(w.options.FileFormat()) + "\n"
 		}
@@ -294,5 +349,6 @@ func (w *Walker) Walk(node ast.Node) (string, error) {
 }
 
 func (w *Walker) WalkFromRoot() (string, error) {
+	// w.node.Dump(w.source, 0)
 	return w.Walk(w.node)
 }

@@ -1,4 +1,4 @@
-package markdown
+package walker
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 
 	"github.com/theobori/lueur/gophermap"
 	"github.com/theobori/lueur/internal/common"
-	"github.com/theobori/lueur/walker"
 	"github.com/yuin/goldmark/ast"
 )
 
@@ -34,11 +33,32 @@ func (w *Walker) ContainsOnlyRefs(node ast.Node) (bool, error) {
 	return true, nil
 }
 
+func (w *Walker) ParentsContainsOnlyRefs(node ast.Node) (bool, error) {
+	curr := node.Parent()
+	for {
+		_, isDocument := curr.(*ast.Document)
+		if isDocument {
+			break
+		}
+
+		c, err := w.ContainsOnlyRefs(curr)
+		if err != nil {
+			return false, err
+		}
+		if !c {
+			return false, nil
+		}
+		curr = curr.Parent()
+	}
+
+	return true, nil
+}
+
 func (w *Walker) buildInlineAnswer(line *gophermap.Line, destination string) string {
 	var inlineAnswer string
 
 	switch w.options.ReferencePosition() {
-	case walker.AfterTraverse:
+	case AfterTraverse:
 		number := len(w.ctx.ReferencesQueue) + 1
 		inlineAnswer = fmt.Sprintf("(%s)[%d]", line.Description, number)
 
@@ -47,7 +67,7 @@ func (w *Walker) buildInlineAnswer(line *gophermap.Line, destination string) str
 		}
 
 		line.Description = fmt.Sprintf("[%d] %s", number, line.Description)
-	case walker.AfterBlocks:
+	case AfterBlocks:
 		inlineAnswer = line.Description
 	}
 
@@ -63,22 +83,11 @@ func (w *Walker) processReferenceEdgeCases(node ast.Node, line *gophermap.Line, 
 	_, isAutoLink := node.(*ast.AutoLink)
 	if isAutoLink &&
 		w.options.FileFormat() == gophermap.FileFormatTxt &&
-		w.options.ReferencePosition() == walker.AfterTraverse {
+		w.options.ReferencePosition() == AfterTraverse {
 		return baseInlineAnswser, nil
 	}
 
 	w.ctx.ReferencesQueue = append(w.ctx.ReferencesQueue, *line)
-
-	if w.options.ReferencePosition() == walker.AfterBlocks {
-		containsOnlyRefs, err := w.ContainsOnlyRefs(node.Parent())
-		if err != nil {
-			return "", err
-		}
-
-		if containsOnlyRefs {
-			return "", nil
-		}
-	}
 
 	return inlineAnswer, nil
 }
