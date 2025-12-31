@@ -7,10 +7,10 @@ import (
 )
 
 func (w *Walker) walkIteratorHelper(node ast.Node) (string, error) {
-	// a good optimization here is to use a string builder when iterating instead
+	// A good optimization here is to use a string builder when iterating instead
 	// of an immutable string
 	//
-	// With an immutable string on a Markdown file with >60k lines:
+	// With an immutable string on a Markdown file (2.03 MiB) with +100k lines:
 	//________________________________________________________
 	// Executed in    4.52 secs    fish           external
 	// usr time   18.02 secs    0.32 millis   18.02 secs
@@ -23,19 +23,19 @@ func (w *Walker) walkIteratorHelper(node ast.Node) (string, error) {
 	// usr time  311.73 millis    1.13 millis  310.60 millis
 	// sys time   57.08 millis    1.02 millis   56.06 millis
 	//
-	s := strings.Builder{}
+	builder := strings.Builder{}
 
 	for c := node.FirstChild(); c != nil; c = c.NextSibling() {
-		res, err := w.Walk(c)
+		s, err := w.Walk(c)
 		if err != nil {
 			return "", err
 		}
 
-		_, err = s.WriteString(res)
+		_, err = builder.WriteString(s)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	return s.String(), nil
+	return builder.String(), nil
 }

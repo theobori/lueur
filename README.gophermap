@@ -1,11 +1,13 @@
 i	/	localhost	70
-i# Gophermap renderer	/	localhost	70
+i# Gopherspace renderer	/	localhost	70
 i	/	localhost	70
+ibuild badge	/	localhost	70
 hbuild badge	URL:https://github.com/theobori/lueur/actions/workflows/build.yml/badge.svg	github.com	443
-hhttps://github.com/theobori/lueur/actions/workflows/build.yml	URL:https://github.com/theobori/lueur/actions/workflows/build.yml	github.com	443
+hbuild badge	URL:https://github.com/theobori/lueur/actions/workflows/build.yml	github.com	443
 i	/	localhost	70
+ibuiltwithnix badge	/	localhost	70
 hbuiltwithnix badge	URL:https://builtwithnix.org/badge.svg	builtwithnix.org	443
-hhttps://builtwithnix.org	URL:https://builtwithnix.org	builtwithnix.org	443
+hbuiltwithnix badge	URL:https://builtwithnix.org	builtwithnix.org	443
 i	/	localhost	70
 iThe name of the project is lueur, pronounced \lɥœʁ\, which	/	localhost	70
 iis a French word for vivid, momentary expression.	/	localhost	70
@@ -14,8 +16,10 @@ iThis GitHub repository is a KISS project in the form of a	/	localhost	70
 iCLI tool. It allows you to convert Markdown and HTML to	/	localhost	70
 igophermap, .gph and .txt files. This project was originally	/	localhost	70
 idesigned to convert blog posts written in Markdown format.	/	localhost	70
-iThe goldmark project was used to parse the Markdown.	/	localhost	70
+iThe goldmark project was used to parse the Markdown and the	/	localhost	70
+iGo Networking project for the HTML.	/	localhost	70
 hgoldmark	URL:https://github.com/yuin/goldmark	github.com	443
+hGo Networking	URL:https://cs.opensource.google/go/x/net/+/master:html/	cs.opensource.google	443
 i	/	localhost	70
 iThe project was tested with the Gopher servers	/	localhost	70
 igopher://bitreich.org:70/scm/geomyidae/ and gophernicus and	/	localhost	70
@@ -28,9 +32,10 @@ hlagrange	URL:https://gmi.skyjake.fi/lagrange/	gmi.skyjake.fi	443
 hGophie	URL:https://gophie.org/	gophie.org	443
 0gopher://baud.baby/0/phlog/fs20181102.txt	/phlog/fs20181102.txt	baud.baby	70
 i	/	localhost	70
-iThis project is still under construction, HTML is not	/	localhost	70
-iimplemented and only the most basic features will be, such	/	localhost	70
-ias basic tags, CSS will not be supported.	/	localhost	70
+iThis project is still under construction, only the most	/	localhost	70
+ibasic HTML features will be implemented, such as basic tags,	/	localhost	70
+iCSS will not be supported. It has been designed to support	/	localhost	70
+iHTML inside Markdown.	/	localhost	70
 i	/	localhost	70
 i## Getting started	/	localhost	70
 i	/	localhost	70

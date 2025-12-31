@@ -57,8 +57,6 @@ func testCompsHelper(t *testing.T, comps []Comparable, options *Options) {
 }
 
 func TestWalkEmphasis(t *testing.T) {
-	t.Parallel()
-
 	tests := []Comparable{
 		{
 			source:   "**hello world**",
@@ -78,8 +76,6 @@ func TestWalkEmphasis(t *testing.T) {
 }
 
 func TestWalkHeading(t *testing.T) {
-	t.Parallel()
-
 	tests := []Comparable{
 		{
 			source:   "# h1",
@@ -116,8 +112,6 @@ i## line3	/	localhost	70
 }
 
 func TestWalkAutoLink(t *testing.T) {
-	t.Parallel()
-
 	tests := []Comparable{
 		{
 			source: "https://a.com",
@@ -137,8 +131,6 @@ hhttp://a.com	URL:http://a.com	a.com	80
 }
 
 func TestWalkCodeBlock(t *testing.T) {
-	t.Parallel()
-
 	tests := []Comparable{
 		{
 			source: "```" + `
@@ -190,8 +182,6 @@ icodeblock	/	localhost	70
 }
 
 func TestWalkLink(t *testing.T) {
-	t.Parallel()
-
 	tests := []Comparable{
 		{
 			source: "[text link](https://example.com)",
@@ -223,8 +213,6 @@ hinline link	URL:https://example.com	example.com	443
 }
 
 func TestWalkImage(t *testing.T) {
-	t.Parallel()
-
 	tests := []Comparable{
 		{
 			source: "![alt text](https://example.com/image.png)",
@@ -244,8 +232,6 @@ I/photo.jpg	/photo.jpg	localhost	70
 }
 
 func TestWalkBlockQuote(t *testing.T) {
-	t.Parallel()
-
 	tests := []Comparable{
 		{
 			source:   "> single line quote",
@@ -266,8 +252,6 @@ ithird line”	/	localhost	70
 }
 
 func TestWalkCodeSpan(t *testing.T) {
-	t.Parallel()
-
 	tests := []Comparable{
 		{
 			source:   "`hello world`",
@@ -283,8 +267,6 @@ func TestWalkCodeSpan(t *testing.T) {
 }
 
 func TestWalkParagraph(t *testing.T) {
-	t.Parallel()
-
 	tests := []Comparable{
 		{
 			source: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed laoreet eros nec interdum vestibulum. Sed elementum scelerisque euismod. Praesent pellentesque justo eu ex iaculis ullamcorper. Nulla suscipit purus quis sagittis sagittis. Sed eget tempus odio. Interdum et malesuada fames ac ante ipsum primis in faucibus. Suspendisse eget orci erat. Sed volutpat maximus urna eu commodo. Praesent tristique non nibh blandit ultricies. Etiam tempus nisi urna, non accumsan ante laoreet ac. Nam et lectus pharetra risus rhoncus facilisis. Suspendisse eu quam venenatis ipsum scelerisque scelerisque. `,
@@ -304,8 +286,6 @@ iSuspendisse eu quam venenatis ipsum scelerisque scelerisque.	/	localhost	70
 }
 
 func TestWalkDocument(t *testing.T) {
-	t.Parallel()
-
 	tests := []Comparable{
 		{
 			source: `# Conclusion
@@ -480,7 +460,6 @@ iAs i was saying, i had a lot og pages like the b page	/	localhost	70
 i	/	localhost	70
 iHello title, world.	/	localhost	70
 Ititle	/dog.jpg	localhost	70
-i	/	localhost	70
 `,
 		},
 	}
@@ -489,8 +468,6 @@ i	/	localhost	70
 }
 
 func TestWalkDocumentReferencesAfterAll(t *testing.T) {
-	t.Parallel()
-
 	source := `[a](https://a.com) tttt uu vvvvv https://a.com
 
 https://a.com
@@ -562,8 +539,6 @@ aaaa
 }
 
 func TestWalkList(t *testing.T) {
-	t.Parallel()
-
 	tests := []Comparable{
 		{
 			source: `- a

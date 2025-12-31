@@ -26,13 +26,6 @@ func NewLine(
 	return &Line{itemType, description, path, domain, port}, nil
 }
 
-func (l *Line) StringWithSep(sep string) string {
-	return fmt.Sprintf(
-		"%s%s%s%s%s%s%s%d",
-		l.ItemType.String(), l.Description, sep, l.Path, sep, l.Domain, sep, l.Port,
-	)
-}
-
 func (l *Line) StringGPHFormat() string {
 	return fmt.Sprintf(
 		"[%s|%s|%s|%s|%d]",

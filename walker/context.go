@@ -11,6 +11,14 @@ type Context struct {
 	Indentation     *common.Indentation
 }
 
+func NewDefaultContext() *Context {
+	return &Context{
+		Depth:           common.NewDefaultCounter(),
+		ReferencesQueue: []gophermap.Line{},
+		Indentation:     common.NewDefaultIndentation(),
+	}
+}
+
 func (c *Context) Reset() {
 	c.ClearQueues()
 	c.Depth.Reset()
@@ -19,12 +27,4 @@ func (c *Context) Reset() {
 
 func (c *Context) ClearQueues() {
 	c.ReferencesQueue = nil
-}
-
-func NewDefaultContext() *Context {
-	return &Context{
-		Depth:           common.NewDefaultCounter(),
-		ReferencesQueue: []gophermap.Line{},
-		Indentation:     common.NewDefaultIndentation(),
-	}
 }

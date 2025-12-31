@@ -1,5 +1,5 @@
 
-# Gophermap renderer
+# Gopherspace renderer
 
 ((build badge)[1])[2]
 
@@ -12,18 +12,20 @@ This GitHub repository is a KISS project in the form of a
 CLI tool. It allows you to convert Markdown and HTML to
 gophermap, .gph and .txt files. This project was originally
 designed to convert blog posts written in Markdown format.
-The (goldmark)[5] project was used to parse the Markdown.
+The (goldmark)[5] project was used to parse the Markdown and
+the (Go Networking)[6] project for the HTML.
 
 The project was tested with the Gopher servers
-(gopher://bitreich.org:70/scm/geomyidae/)[6] and
-(gophernicus)[7] and with the Gopher clients (lagrange)[8]
-and (Gophie)[9]. I mainly used
-(gopher://baud.baby/0/phlog/fs20181102.txt)[10] as a
+(gopher://bitreich.org:70/scm/geomyidae/)[7] and
+(gophernicus)[8] and with the Gopher clients (lagrange)[9]
+and (Gophie)[10]. I mainly used
+(gopher://baud.baby/0/phlog/fs20181102.txt)[11] as a
 reference for the gophermap file format.
 
-This project is still under construction, HTML is not
-implemented and only the most basic features will be, such
-as basic tags, CSS will not be supported.
+This project is still under construction, only the most
+basic HTML features will be implemented, such as basic tags,
+CSS will not be supported. It has been designed to support
+HTML inside Markdown.
 
 ## Getting started
 
@@ -54,23 +56,24 @@ Usage of lueur:
 ## The Gopher protocol
 
 To understand what Gopher is, I recommend
-(AboutGopher.txt)[11] and the (wikipedia page)[12].
+(AboutGopher.txt)[12] and the (wikipedia page)[13].
 
 ## Contribute
 
 If you want to help the project, you can follow the
-guidelines in (CONTRIBUTING.md)[13].
+guidelines in (CONTRIBUTING.md)[14].
 [1] https://github.com/theobori/lueur/actions/workflows/build.yml/badge.svg
 [2] https://github.com/theobori/lueur/actions/workflows/build.yml
 [3] https://builtwithnix.org/badge.svg
 [4] https://builtwithnix.org
 [5] https://github.com/yuin/goldmark
-[6] gopher://bitreich.org:70/scm/geomyidae/
-[7] https://github.com/gophernicus/gophernicus
-[8] https://gmi.skyjake.fi/lagrange/
-[9] https://gophie.org/
-[10] gopher://baud.baby/0/phlog/fs20181102.txt
-[11] https://github.com/sgolovine/roll-your-gopher/blob/master/AboutGopher.txt
-[12] https://en.wikipedia.org/wiki/Gopher_(protocol)
-[13] ./CONTRIBUTING.md
+[6] https://cs.opensource.google/go/x/net/+/master:html/
+[7] gopher://bitreich.org:70/scm/geomyidae/
+[8] https://github.com/gophernicus/gophernicus
+[9] https://gmi.skyjake.fi/lagrange/
+[10] https://gophie.org/
+[11] gopher://baud.baby/0/phlog/fs20181102.txt
+[12] https://github.com/sgolovine/roll-your-gopher/blob/master/AboutGopher.txt
+[13] https://en.wikipedia.org/wiki/Gopher_(protocol)
+[14] ./CONTRIBUTING.md
 

@@ -135,6 +135,7 @@ func (w *Walker) walkList(node ast.Node) (string, error) {
 	list := node.(*ast.List)
 
 	marker := string(list.Marker)
+
 	items := []string{}
 	i := list.Start
 
@@ -152,7 +153,6 @@ func (w *Walker) walkList(node ast.Node) (string, error) {
 			line = strconv.Itoa(i) + line
 			i += 1
 		}
-
 		w.ctx.Indentation.UnIndent()
 
 		line = w.ctx.Indentation.IndentValue() + strings.TrimLeft(line, " ")
@@ -210,7 +210,6 @@ func (w *Walker) walkListItem(node ast.Node) (string, error) {
 		}
 
 		line = strings.Trim(line, "\n")
-
 		items = append(items, line)
 	}
 
@@ -225,9 +224,20 @@ func (w *Walker) walkTextBlock(node ast.Node) (string, error) {
 	return w.walkIteratorHelper(node)
 }
 
-func (w *Walker) walkHTMLBlock(_ ast.Node) (string, error) {
-	// TODO: implements
-	return "", nil
+func (w *Walker) walkHTMLBlock(node ast.Node) (string, error) {
+	b := node.Lines().Value(w.source)
+	s := string(b)
+
+	return w.walkHTMLFromString(s)
+}
+
+func (w *Walker) walkRawHTML(node ast.Node) (string, error) {
+	rawHtml := node.(*ast.RawHTML)
+
+	b := rawHtml.Segments.Value(w.source)
+	s := string(b)
+
+	return w.walkHTMLFromString(s)
 }
 
 func (w *Walker) walkTable(_ ast.Node) (string, error) {
@@ -269,6 +279,8 @@ func (w *Walker) walk(node ast.Node) (string, error) {
 		return w.walkTextBlock(node)
 	case *ast.HTMLBlock:
 		return w.walkHTMLBlock(node)
+	case *ast.RawHTML:
+		return w.walkRawHTML(node)
 	case *ast.CodeSpan:
 		return w.walkCodeSpan(node)
 	case *ast.ListItem:
@@ -276,14 +288,14 @@ func (w *Walker) walk(node ast.Node) (string, error) {
 	case *east.Table:
 		return w.walkTable(node)
 	default:
-		return "", fmt.Errorf("unsupported node type: %s", node.Kind().String())
+		return "", fmt.Errorf("unsupported Markdown node type: %s", node.Kind().String())
 	}
 }
 
 func (w *Walker) formatDepthOneText(s string) (string, error) {
 	s = strings.TrimRight(s, "\n")
 
-	if w.options.ReferencePosition() == AfterTraverse && s == "" {
+	if s == "" {
 		return "", nil
 	}
 
@@ -315,12 +327,10 @@ func (w *Walker) formatDepthOneText(s string) (string, error) {
 
 func (w *Walker) Walk(node ast.Node) (string, error) {
 	w.ctx.Depth.Add()
-
 	s, err := w.walk(node)
 	if err != nil {
 		return "", err
 	}
-
 	w.ctx.Depth.Remove()
 
 	// the string result at depth 1 should always be gophermap inline text
@@ -349,6 +359,5 @@ func (w *Walker) Walk(node ast.Node) (string, error) {
 }
 
 func (w *Walker) WalkFromRoot() (string, error) {
-	// w.node.Dump(w.source, 0)
 	return w.Walk(w.node)
 }

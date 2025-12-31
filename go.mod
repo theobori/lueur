@@ -7,6 +7,7 @@ require github.com/yuin/goldmark v1.7.13
 require (
 	github.com/muesli/reflow v0.3.0
 	github.com/sergi/go-diff v1.4.0
+	golang.org/x/net v0.48.0
 )
 
 require (
