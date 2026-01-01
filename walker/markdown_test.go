@@ -3,135 +3,85 @@ package walker
 import (
 	"testing"
 
-	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/theobori/lueur/gophermap"
 )
 
-var (
-	options, _ = NewOptions(
-		80,
-		AfterBlocks,
-		"localhost",
-		70,
-		false,
-		gophermap.FileFormatGophermap,
-	)
-
-	emptyGophermapLine, _ = gophermap.NewLine(
-		gophermap.ItemTypeInlineText,
-		"",
-		"/",
-		options.Domain(),
-		options.Port(),
-	)
-	emptyGophermapLineString string = emptyGophermapLine.String() + "\n"
-
-	dmp *diffmatchpatch.DiffMatchPatch = diffmatchpatch.New()
-)
-
-type Comparable struct {
-	source   string
-	expected string
-}
-
-func testCompHelper(t *testing.T, comp Comparable, options *Options) {
-	w := NewWalkerWithOptions([]byte(comp.source), options)
-
-	s, err := w.WalkFromRoot()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if s != comp.expected {
-		diff := dmp.DiffMain(s, comp.expected, false)
-		prettyDiffString := dmp.DiffPrettyText(diff)
-
-		t.Fatal(prettyDiffString)
-	}
-}
-
-func testCompsHelper(t *testing.T, comps []Comparable, options *Options) {
-	for _, comp := range comps {
-		testCompHelper(t, comp, options)
-	}
-}
-
 func TestWalkEmphasis(t *testing.T) {
-	tests := []Comparable{
+	tests := []comparable{
 		{
 			source:   "**hello world**",
-			expected: emptyGophermapLineString + "ihello world\t/\tlocalhost\t70\n",
+			expected: testEmptyGophermapLineString + "ihello world\t/\tlocalhost\t70\n",
 		},
 		{
 			source:   "***hello *aa* world***",
-			expected: emptyGophermapLineString + "ihello aa world\t/\tlocalhost\t70\n",
+			expected: testEmptyGophermapLineString + "ihello aa world\t/\tlocalhost\t70\n",
 		},
 		{
 			source:   "_**ALINK**_ aa __c__",
-			expected: emptyGophermapLineString + "iALINK aa c\t/\tlocalhost\t70\n",
+			expected: testEmptyGophermapLineString + "iALINK aa c\t/\tlocalhost\t70\n",
 		},
 	}
 
-	testCompsHelper(t, tests, options)
+	testComparableMultipleHelper(t, tests, testOptions)
 }
 
 func TestWalkHeading(t *testing.T) {
-	tests := []Comparable{
+	tests := []comparable{
 		{
 			source:   "# h1",
-			expected: emptyGophermapLineString + "i# h1\t/\tlocalhost\t70\n",
+			expected: testEmptyGophermapLineString + "i# h1\t/\tlocalhost\t70\n",
 		},
 		{
 			source:   "## h2",
-			expected: emptyGophermapLineString + "i## h2\t/\tlocalhost\t70\n",
+			expected: testEmptyGophermapLineString + "i## h2\t/\tlocalhost\t70\n",
 		},
 		{
 			source:   "### h3",
-			expected: emptyGophermapLineString + "i### h3\t/\tlocalhost\t70\n",
+			expected: testEmptyGophermapLineString + "i### h3\t/\tlocalhost\t70\n",
 		},
 		{
 			source:   "#### h4",
-			expected: emptyGophermapLineString + "i#### h4\t/\tlocalhost\t70\n",
+			expected: testEmptyGophermapLineString + "i#### h4\t/\tlocalhost\t70\n",
 		},
 		{
 			source: `line1
 line2
 line3
 -----`,
-			expected: emptyGophermapLineString + `i## line1	/	localhost	70
+			expected: testEmptyGophermapLineString + `i## line1	/	localhost	70
 i## line2	/	localhost	70
 i## line3	/	localhost	70
 `,
 		},
 	}
 
-	localOptions := *options
+	localOptions := *testOptions
 	localOptions.WriteFancyHeader = true
 
-	testCompsHelper(t, tests, &localOptions)
+	testComparableMultipleHelper(t, tests, &localOptions)
 }
 
 func TestWalkAutoLink(t *testing.T) {
-	tests := []Comparable{
+	tests := []comparable{
 		{
 			source: "https://a.com",
-			expected: emptyGophermapLineString + `ihttps://a.com	/	localhost	70
+			expected: testEmptyGophermapLineString + `ihttps://a.com	/	localhost	70
 hhttps://a.com	URL:https://a.com	a.com	443
 `,
 		},
 		{
 			source: "http://a.com",
-			expected: emptyGophermapLineString + `ihttp://a.com	/	localhost	70
+			expected: testEmptyGophermapLineString + `ihttp://a.com	/	localhost	70
 hhttp://a.com	URL:http://a.com	a.com	80
 `,
 		},
 	}
 
-	testCompsHelper(t, tests, options)
+	testComparableMultipleHelper(t, tests, testOptions)
 }
 
 func TestWalkCodeBlock(t *testing.T) {
-	tests := []Comparable{
+	tests := []comparable{
 		{
 			source: "```" + `
 codeblock
@@ -139,7 +89,7 @@ codeblock
 codeblock
 codeblock
 ` + "```",
-			expected: emptyGophermapLineString + `icodeblock	/	localhost	70
+			expected: testEmptyGophermapLineString + `icodeblock	/	localhost	70
 icodeblock	/	localhost	70
 icodeblock	/	localhost	70
 icodeblock	/	localhost	70
@@ -161,7 +111,7 @@ codeblock
 
 codeblock
 ` + "```",
-			expected: emptyGophermapLineString + `icodeblock	/	localhost	70
+			expected: testEmptyGophermapLineString + `icodeblock	/	localhost	70
 i	/	localhost	70
 i	/	localhost	70
 i	/	localhost	70
@@ -178,99 +128,99 @@ icodeblock	/	localhost	70
 		},
 	}
 
-	testCompsHelper(t, tests, options)
+	testComparableMultipleHelper(t, tests, testOptions)
 }
 
 func TestWalkLink(t *testing.T) {
-	tests := []Comparable{
+	tests := []comparable{
 		{
 			source: "[text link](https://example.com)",
-			expected: emptyGophermapLineString + `itext link	/	localhost	70
+			expected: testEmptyGophermapLineString + `itext link	/	localhost	70
 htext link	URL:https://example.com	example.com	443
 `,
 		},
 		{
 			source: "[link](http://example.com)",
-			expected: emptyGophermapLineString + `ilink	/	localhost	70
+			expected: testEmptyGophermapLineString + `ilink	/	localhost	70
 hlink	URL:http://example.com	example.com	80
 `,
 		},
 		{
 			source: "[multiple words link](https://test.org/path)",
-			expected: emptyGophermapLineString + `imultiple words link	/	localhost	70
+			expected: testEmptyGophermapLineString + `imultiple words link	/	localhost	70
 hmultiple words link	URL:https://test.org/path	test.org	443
 `,
 		},
 		{
 			source: "Some text [inline link](https://example.com) and more text",
-			expected: emptyGophermapLineString + `iSome text inline link and more text	/	localhost	70
+			expected: testEmptyGophermapLineString + `iSome text inline link and more text	/	localhost	70
 hinline link	URL:https://example.com	example.com	443
 `,
 		},
 	}
 
-	testCompsHelper(t, tests, options)
+	testComparableMultipleHelper(t, tests, testOptions)
 }
 
 func TestWalkImage(t *testing.T) {
-	tests := []Comparable{
+	tests := []comparable{
 		{
 			source: "![alt text](https://example.com/image.png)",
-			expected: emptyGophermapLineString + `ialt text	/	localhost	70
+			expected: testEmptyGophermapLineString + `ialt text	/	localhost	70
 halt text	URL:https://example.com/image.png	example.com	443
 `,
 		},
 		{
 			source: "![](/photo.jpg)",
-			expected: emptyGophermapLineString + `i/photo.jpg	/	localhost	70
+			expected: testEmptyGophermapLineString + `i/photo.jpg	/	localhost	70
 I/photo.jpg	/photo.jpg	localhost	70
 `,
 		},
 	}
 
-	testCompsHelper(t, tests, options)
+	testComparableMultipleHelper(t, tests, testOptions)
 }
 
 func TestWalkBlockQuote(t *testing.T) {
-	tests := []Comparable{
+	tests := []comparable{
 		{
 			source:   "> single line quote",
-			expected: emptyGophermapLineString + "i“single line quote”\t/\tlocalhost\t70\n",
+			expected: testEmptyGophermapLineString + "i“single line quote”\t/\tlocalhost\t70\n",
 		},
 		{
 			source: `> first line
 > second line
 > third line`,
-			expected: emptyGophermapLineString + `i“first line	/	localhost	70
+			expected: testEmptyGophermapLineString + `i“first line	/	localhost	70
 isecond line	/	localhost	70
 ithird line”	/	localhost	70
 `,
 		},
 	}
 
-	testCompsHelper(t, tests, options)
+	testComparableMultipleHelper(t, tests, testOptions)
 }
 
 func TestWalkCodeSpan(t *testing.T) {
-	tests := []Comparable{
+	tests := []comparable{
 		{
 			source:   "`hello world`",
-			expected: emptyGophermapLineString + "ihello world\t/\tlocalhost\t70\n",
+			expected: testEmptyGophermapLineString + "ihello world\t/\tlocalhost\t70\n",
 		},
 		{
 			source:   "`hello` `aa` `world` `a b c d`",
-			expected: emptyGophermapLineString + "ihello aa world a b c d\t/\tlocalhost\t70\n",
+			expected: testEmptyGophermapLineString + "ihello aa world a b c d\t/\tlocalhost\t70\n",
 		},
 	}
 
-	testCompsHelper(t, tests, options)
+	testComparableMultipleHelper(t, tests, testOptions)
 }
 
 func TestWalkParagraph(t *testing.T) {
-	tests := []Comparable{
+	tests := []comparable{
 		{
 			source: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed laoreet eros nec interdum vestibulum. Sed elementum scelerisque euismod. Praesent pellentesque justo eu ex iaculis ullamcorper. Nulla suscipit purus quis sagittis sagittis. Sed eget tempus odio. Interdum et malesuada fames ac ante ipsum primis in faucibus. Suspendisse eget orci erat. Sed volutpat maximus urna eu commodo. Praesent tristique non nibh blandit ultricies. Etiam tempus nisi urna, non accumsan ante laoreet ac. Nam et lectus pharetra risus rhoncus facilisis. Suspendisse eu quam venenatis ipsum scelerisque scelerisque. `,
-			expected: emptyGophermapLineString + `iLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed laoreet eros nec	/	localhost	70
+			expected: testEmptyGophermapLineString + `iLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed laoreet eros nec	/	localhost	70
 iinterdum vestibulum. Sed elementum scelerisque euismod. Praesent pellentesque	/	localhost	70
 ijusto eu ex iaculis ullamcorper. Nulla suscipit purus quis sagittis sagittis.	/	localhost	70
 iSed eget tempus odio. Interdum et malesuada fames ac ante ipsum primis in	/	localhost	70
@@ -282,11 +232,11 @@ iSuspendisse eu quam venenatis ipsum scelerisque scelerisque.	/	localhost	70
 		},
 	}
 
-	testCompsHelper(t, tests, options)
+	testComparableMultipleHelper(t, tests, testOptions)
 }
 
 func TestWalkDocument(t *testing.T) {
-	tests := []Comparable{
+	tests := []comparable{
 		{
 			source: `# Conclusion
 
@@ -364,7 +314,7 @@ Hello ![alt][id], world.
 
 [id]: dog.jpg "title"
 `,
-			expected: emptyGophermapLineString + `iConclusion	/	localhost	70
+			expected: testEmptyGophermapLineString + `iConclusion	/	localhost	70
 i	/	localhost	70
 iLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ALINK eros nec	/	localhost	70
 iinterdum vestibulum. Sed elementum scelerisque euismod. Praesent pellentesque	/	localhost	70
@@ -464,7 +414,7 @@ Ititle	/dog.jpg	localhost	70
 		},
 	}
 
-	testCompsHelper(t, tests, options)
+	testComparableMultipleHelper(t, tests, testOptions)
 }
 
 func TestWalkDocumentReferencesAfterAll(t *testing.T) {
@@ -483,8 +433,8 @@ aaaa
 aaaa
 `
 
-	testGopherMap := Comparable{
-		source: source, expected: emptyGophermapLineString + `i(a)[1] tttt uu vvvvv (https://a.com)[2]	/	localhost	70
+	testGopherMap := comparable{
+		source: source, expected: testEmptyGophermapLineString + `i(a)[1] tttt uu vvvvv (https://a.com)[2]	/	localhost	70
 i	/	localhost	70
 i(https://a.com)[3]	/	localhost	70
 i(https://a.com)[4]	/	localhost	70
@@ -508,11 +458,11 @@ h[6] https://a.com	URL:https://a.com	a.com	443
 
 	var localOptions Options
 
-	localOptions = *options
+	localOptions = *testOptions
 	localOptions.SetReferencePositionAndFileFormat(AfterTraverse, gophermap.FileFormatGophermap)
-	testCompHelper(t, testGopherMap, &localOptions)
+	testComparableHelper(t, testGopherMap, &localOptions)
 
-	testTxt := Comparable{
+	testTxt := comparable{
 		source: source,
 		expected: `
 (a)[1] tttt uu vvvvv https://a.com
@@ -533,13 +483,13 @@ aaaa
 `,
 	}
 
-	localOptions = *options
+	localOptions = *testOptions
 	localOptions.SetReferencePositionAndFileFormat(AfterTraverse, gophermap.FileFormatTxt)
-	testCompHelper(t, testTxt, &localOptions)
+	testComparableHelper(t, testTxt, &localOptions)
 }
 
 func TestWalkList(t *testing.T) {
-	tests := []Comparable{
+	tests := []comparable{
 		{
 			source: `- a
 - a
@@ -550,7 +500,7 @@ func TestWalkList(t *testing.T) {
       1. e
       2. e 
 `,
-			expected: emptyGophermapLineString + `i- a	/	localhost	70
+			expected: testEmptyGophermapLineString + `i- a	/	localhost	70
 i- a	/	localhost	70
 i- a	/	localhost	70
 i  - c	/	localhost	70
@@ -577,5 +527,5 @@ hWW	URL:https://google.fr	google.fr	443
 		},
 	}
 
-	testCompsHelper(t, tests, options)
+	testComparableMultipleHelper(t, tests, testOptions)
 }

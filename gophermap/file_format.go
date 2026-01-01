@@ -28,8 +28,8 @@ func NewFileFormatFromString(s string) (FileFormat, error) {
 	}
 }
 
-func (f *FileFormat) String() string {
-	switch *f {
+func (f FileFormat) String() string {
+	switch f {
 	case FileFormatGPH:
 		return "gph"
 	case FileFormatTxt:

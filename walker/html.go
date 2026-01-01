@@ -90,7 +90,9 @@ func (w *Walker) walkHTMLCenter(node *html.Node) (string, error) {
 		return "", err
 	}
 
-	s += "\n"
+	// TODO: implement text centering ?
+
+	s = "\n" + strings.Trim(s, "\n") + "\n"
 
 	return s, nil
 }
