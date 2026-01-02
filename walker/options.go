@@ -21,6 +21,8 @@ type Options struct {
 	WriteFancyHeader bool
 	// Write using the GPH format
 	fileFormat gophermap.FileFormat
+	// Prefix for references path
+	PathPrefix string
 }
 
 func NewOptions(
@@ -30,6 +32,7 @@ func NewOptions(
 	port int,
 	writeFancyHeader bool,
 	fileFormat gophermap.FileFormat,
+	pathPrefix string,
 ) (*Options, error) {
 	var err error
 
@@ -55,6 +58,7 @@ func NewOptions(
 	}
 
 	o.WriteFancyHeader = writeFancyHeader
+	o.PathPrefix = pathPrefix
 
 	return &o, nil
 }
@@ -67,6 +71,7 @@ func NewDefaultOptions(domain string) (*Options, error) {
 		gophermap.DefaultGopherPort,
 		false,
 		gophermap.FileFormatGophermap,
+		"",
 	)
 	if err != nil {
 		return nil, err

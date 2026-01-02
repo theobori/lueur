@@ -131,6 +131,7 @@ func main() {
 		domain                  string
 		port                    int
 		writeFancyHeader        bool
+		pathPrefix              string
 	)
 
 	flag.StringVar(
@@ -138,6 +139,12 @@ func main() {
 		"file",
 		"",
 		"Read input from a file",
+	)
+	flag.StringVar(
+		&pathPrefix,
+		"path-prefix",
+		"",
+		"Prefix applied to the reference paths",
 	)
 	flag.StringVar(
 		&directoryPath,
@@ -207,6 +214,7 @@ func main() {
 		port,
 		writeFancyHeader,
 		fileFormat,
+		pathPrefix,
 	)
 	if err != nil {
 		log.Fatalln(err)

@@ -3,58 +3,11 @@ package walker
 import (
 	"fmt"
 	"net/url"
-	"strings"
+	"path/filepath"
 
 	"github.com/theobori/lueur/gophermap"
 	"github.com/theobori/lueur/internal/common"
-	"github.com/yuin/goldmark/ast"
 )
-
-// TODO: add memoization
-func (w *Walker) ContainsOnlyRefs(node ast.Node) (bool, error) {
-	for c := node.FirstChild(); c != nil; c = c.NextSibling() {
-		switch c.(type) {
-		case *ast.AutoLink, *ast.Link, *ast.Image:
-			continue
-		case *ast.Text, *ast.TextBlock:
-			s, err := w.Walk(c)
-			if err != nil {
-				return false, err
-			}
-
-			s = strings.TrimSpace(s)
-			if len(s) > 0 {
-				return false, nil
-			}
-		default:
-			return false, nil
-		}
-	}
-
-	return true, nil
-}
-
-// TODO: add memoization
-func (w *Walker) ParentsContainsOnlyRefs(node ast.Node) (bool, error) {
-	curr := node.Parent()
-	for {
-		_, isDocument := curr.(*ast.Document)
-		if isDocument {
-			break
-		}
-
-		c, err := w.ContainsOnlyRefs(curr)
-		if err != nil {
-			return false, err
-		}
-		if !c {
-			return false, nil
-		}
-		curr = curr.Parent()
-	}
-
-	return true, nil
-}
 
 // Dirty shit, don't try to understand this function
 //
@@ -103,7 +56,7 @@ func (w *Walker) referenceLine(description string, destination string) (*gopherm
 		line.Port = w.options.Port()
 		line.ItemType = gophermap.NewItemTypeFromPath(destination)
 		line.Domain = w.options.Domain()
-		line.Path = "/" + strings.TrimLeft(destination, "/")
+		line.Path = filepath.Join("/", w.options.PathPrefix, "/", destination)
 	}
 
 	return &line, nil

@@ -15,6 +15,7 @@ var (
 		70,
 		false,
 		gophermap.FileFormatGophermap,
+		"",
 	)
 
 	testEmptyGophermapLine, _ = gophermap.NewLine(
