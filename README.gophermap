@@ -17,22 +17,6 @@ iCLI tool. It allows you to convert Markdown and HTML to	/	localhost	70
 igophermap, .gph and .txt files. It was originally designed	/	localhost	70
 ito convert blog posts written in Markdown format.	/	localhost	70
 i	/	localhost	70
-iIt has been tested with the Gopher servers	/	localhost	70
-igopher://bitreich.org:70/scm/geomyidae/ and gophernicus and	/	localhost	70
-iwith the Gopher clients lagrange and Gophie. I mainly used	/	localhost	70
-igopher://baud.baby/0/phlog/fs20181102.txt as a reference for	/	localhost	70
-ithe gophermap file format.	/	localhost	70
-1gopher://bitreich.org:70/scm/geomyidae/	/scm/geomyidae/	bitreich.org:70	70
-hgophernicus	URL:https://github.com/gophernicus/gophernicus	github.com	443
-hlagrange	URL:https://gmi.skyjake.fi/lagrange/	gmi.skyjake.fi	443
-hGophie	URL:https://gophie.org/	gophie.org	443
-0gopher://baud.baby/0/phlog/fs20181102.txt	/phlog/fs20181102.txt	baud.baby	70
-i	/	localhost	70
-iThis project is still under construction, only the most	/	localhost	70
-ibasic HTML features will be implemented, such as basic tags,	/	localhost	70
-iCSS will not be supported. It has been designed to support	/	localhost	70
-iHTML inside Markdown.	/	localhost	70
-i	/	localhost	70
 i## Getting started	/	localhost	70
 i	/	localhost	70
 iTo start using the tool, simply run the following command.	/	localhost	70
@@ -74,6 +58,26 @@ i    ┌─────────┐	/	localhost	70
 i    │4. Output│      4. Prints the output to the process	/	localhost	70
 i    └─────────┘          standard output	/	localhost	70
 i	/	localhost	70
+i## Compatibility	/	localhost	70
+i	/	localhost	70
+iIt has been tested with the Gopher servers	/	localhost	70
+igopher://bitreich.org:70/scm/geomyidae/ and gophernicus and	/	localhost	70
+iwith the Gopher clients lagrange and Gophie. I mainly used	/	localhost	70
+igopher://baud.baby/0/phlog/fs20181102.txt as a reference for	/	localhost	70
+ithe gophermap file format.	/	localhost	70
+1gopher://bitreich.org:70/scm/geomyidae/	/scm/geomyidae/	bitreich.org:70	70
+hgophernicus	URL:https://github.com/gophernicus/gophernicus	github.com	443
+hlagrange	URL:https://gmi.skyjake.fi/lagrange/	gmi.skyjake.fi	443
+hGophie	URL:https://gophie.org/	gophie.org	443
+0gopher://baud.baby/0/phlog/fs20181102.txt	/phlog/fs20181102.txt	baud.baby	70
+i	/	localhost	70
+i## State	/	localhost	70
+i	/	localhost	70
+iThis project is still under construction, only the most	/	localhost	70
+ibasic HTML features will be implemented, such as basic tags,	/	localhost	70
+iCSS will not be supported. It has been designed to support	/	localhost	70
+iHTML inside Markdown.	/	localhost	70
+i	/	localhost	70
 i## The Gopher protocol	/	localhost	70
 i	/	localhost	70
 iTo understand what Gopher is, I recommend AboutGopher.txt	/	localhost	70
@@ -85,7 +89,7 @@ i## Contribute	/	localhost	70
 i	/	localhost	70
 iIf you want to help the project, you can follow the	/	localhost	70
 iguidelines in CONTRIBUTING.md.	/	localhost	70
-1CONTRIBUTING.md	/./CONTRIBUTING.md	localhost	70
+1CONTRIBUTING.md	/CONTRIBUTING.md	localhost	70
 i	/	localhost	70
 i## Potential improvements	/	localhost	70
 i	/	localhost	70

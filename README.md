@@ -8,10 +8,6 @@ The name of the project is lueur, pronounced \lɥœʁ\, which is a French word f
 
 This GitHub repository is a KISS project in the form of a CLI tool. It allows you to convert Markdown and HTML to gophermap, .gph and .txt files. It was originally designed to convert blog posts written in Markdown format.
 
-It has been tested with the Gopher servers [gopher://bitreich.org:70/scm/geomyidae/](gopher://bitreich.org:70/scm/geomyidae/) and [gophernicus](https://github.com/gophernicus/gophernicus) and with the Gopher clients [lagrange](https://gmi.skyjake.fi/lagrange/) and [Gophie](https://gophie.org/). I mainly used [gopher://baud.baby/0/phlog/fs20181102.txt](gopher://baud.baby/0/phlog/fs20181102.txt) as a reference for the gophermap file format.
-
-This project is still under construction, only the most basic HTML features will be implemented, such as basic tags, CSS will not be supported. It has been designed to support HTML inside Markdown.
-
 ## Getting started
 
 To start using the tool, simply run the following command.
@@ -45,6 +41,14 @@ Below is a graph summarizing the various stages.
     │4. Output│      4. Prints the output to the process
     └─────────┘          standard output
 ```
+
+## Compatibility
+
+It has been tested with the Gopher servers [gopher://bitreich.org:70/scm/geomyidae/](gopher://bitreich.org:70/scm/geomyidae/) and [gophernicus](https://github.com/gophernicus/gophernicus) and with the Gopher clients [lagrange](https://gmi.skyjake.fi/lagrange/) and [Gophie](https://gophie.org/). I mainly used [gopher://baud.baby/0/phlog/fs20181102.txt](gopher://baud.baby/0/phlog/fs20181102.txt) as a reference for the gophermap file format.
+
+## State
+
+This project is still under construction, only the most basic HTML features will be implemented, such as basic tags, CSS will not be supported. It has been designed to support HTML inside Markdown.
 
 ## The Gopher protocol
 
