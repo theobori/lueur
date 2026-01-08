@@ -4,7 +4,7 @@
 
 [![builtwithnix badge](https://builtwithnix.org/badge.svg)](https://builtwithnix.org)
 
-The name of the project is lueur, pronounced \lɥœʁ\, which is a French word for vivid, momentary expression.
+The name of the project is lueur, pronounced \\lɥœʁ\\, which is a French word for vivid, momentary expression.
 
 This GitHub repository is a KISS project in the form of a CLI tool. It allows you to convert Markdown and HTML to gophermap, .gph and .txt files. It was originally designed to convert blog posts written in Markdown format.
 
