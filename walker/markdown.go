@@ -60,7 +60,7 @@ func (w *Walker) walkText(node ast.Node) (string, error) {
 }
 
 func (w *Walker) walkParagraph(node ast.Node) (string, error) {
-	s, err := w.walkIteratorHelper(node)
+	s, err := w.walkParagraphLines(node)
 	if err != nil {
 		return "", err
 	}

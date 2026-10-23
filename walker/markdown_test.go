@@ -65,14 +65,12 @@ func TestWalkAutoLink(t *testing.T) {
 	tests := []comparable{
 		{
 			source: "https://a.com",
-			expected: testEmptyGophermapLineString + `ihttps://a.com	/	localhost	70
-hhttps://a.com	URL:https://a.com	a.com	443
+			expected: `hhttps://a.com	URL:https://a.com	a.com	443
 `,
 		},
 		{
 			source: "http://a.com",
-			expected: testEmptyGophermapLineString + `ihttp://a.com	/	localhost	70
-hhttp://a.com	URL:http://a.com	a.com	80
+			expected: `hhttp://a.com	URL:http://a.com	a.com	80
 `,
 		},
 	}
@@ -135,20 +133,17 @@ func TestWalkLink(t *testing.T) {
 	tests := []comparable{
 		{
 			source: "[text link](https://example.com)",
-			expected: testEmptyGophermapLineString + `itext link	/	localhost	70
-htext link	URL:https://example.com	example.com	443
+			expected: `htext link	URL:https://example.com	example.com	443
 `,
 		},
 		{
 			source: "[link](http://example.com)",
-			expected: testEmptyGophermapLineString + `ilink	/	localhost	70
-hlink	URL:http://example.com	example.com	80
+			expected: `hlink	URL:http://example.com	example.com	80
 `,
 		},
 		{
 			source: "[multiple words link](https://test.org/path)",
-			expected: testEmptyGophermapLineString + `imultiple words link	/	localhost	70
-hmultiple words link	URL:https://test.org/path	test.org	443
+			expected: `hmultiple words link	URL:https://test.org/path	test.org	443
 `,
 		},
 		{
@@ -166,14 +161,12 @@ func TestWalkImage(t *testing.T) {
 	tests := []comparable{
 		{
 			source: "![alt text](https://example.com/image.png)",
-			expected: testEmptyGophermapLineString + `ialt text	/	localhost	70
-halt text	URL:https://example.com/image.png	example.com	443
+			expected: `halt text	URL:https://example.com/image.png	example.com	443
 `,
 		},
 		{
 			source: "![](/photo.jpg)",
-			expected: testEmptyGophermapLineString + `i/photo.jpg	/	localhost	70
-I/photo.jpg	/photo.jpg	localhost	70
+			expected: `I/photo.jpg	/photo.jpg	localhost	70
 `,
 		},
 	}
@@ -363,23 +356,12 @@ i	/	localhost	70
 iHello world https://example.com my-link	/	localhost	70
 hhttps://example.com	URL:https://example.com	example.com	443
 hmy-link	URL:https://a.com	a.com	443
-i	/	localhost	70
-ihttps://example.com	/	localhost	70
 hhttps://example.com	URL:https://example.com	example.com	443
-i	/	localhost	70
-ia	/	localhost	70
-ia	/	localhost	70
-ititle	/	localhost	70
-ititle	/	localhost	70
-ititle	/	localhost	70
 ha	URL:https://a.com	a.com	443
 ha	URL:https://a.com	a.com	443
 Ititle	/dog.jpg	localhost	70
 Ititle	/dog.jpg	localhost	70
 Ititle	/dog.jpg	localhost	70
-i	/	localhost	70
-itelnet test	/	localhost	70
-iphlog	/	localhost	70
 8telnet test	user	a.com	23
 1phlog	/phlog	localhost	70
 i	/	localhost	70
@@ -401,8 +383,6 @@ ia	/	localhost	70
 i	/	localhost	70
 iHello alt, world.	/	localhost	70
 Ialt	/cat.png	localhost	70
-i	/	localhost	70
-iAlso see poison.gph	/	localhost	70
 1Also see poison.gph	/poison.gph	localhost	70
 i	/	localhost	70
 iAs i was saying, i had a lot og pages like the b page	/	localhost	70
@@ -532,4 +512,39 @@ hWW	URL:https://google.fr	google.fr	443
 	}
 
 	testComparableMultipleHelper(t, tests, testOptions)
+}
+
+func TestWalkStandaloneReferenceLines(t *testing.T) {
+	ref := "hlink\tURL:https://example.com\texample.com\t443\n"
+	text := func(s string) string { return "i" + s + "\t/\tlocalhost\t70\n" }
+	link := "[link](https://example.com)"
+	tests := []struct {
+		name, source, expected string
+	}{
+		{"standalone", link, ref},
+		{"whitespace", "  " + link + "  ", ref},
+		{"soft breaks", "before\n" + link + "\nafter", testEmptyGophermapLineString + text("before") + text("after") + ref},
+		{"hard breaks", "before  \n" + link + "  \nafter", testEmptyGophermapLineString + text("before") + text("after") + ref},
+		{"consecutive references", link + "\n" + link, ref + ref},
+		{"two references on one line", link + " " + link, testEmptyGophermapLineString + text("link link") + ref + ref},
+		{"inline", "before " + link + " after", testEmptyGophermapLineString + text("before link after") + ref},
+		{"reference label", "[link][id]\n\n[id]: https://example.com", ref},
+		{"formatted label", "[**link**](https://example.com)", ref},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			testComparableHelper(t, comparable{source: test.source, expected: test.expected}, testOptions)
+		})
+	}
+}
+
+func TestWalkStandaloneReferenceGPH(t *testing.T) {
+	options := *testOptions
+	if err := options.SetReferencePositionAndFileFormat(AfterBlocks, gophermap.FileFormatGPH); err != nil {
+		t.Fatal(err)
+	}
+	testComparableHelper(t, comparable{
+		source:   "[link](https://example.com)",
+		expected: "[h|link|URL:https://example.com|example.com|443]\n",
+	}, &options)
 }
